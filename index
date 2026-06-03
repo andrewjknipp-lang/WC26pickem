@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1 World, 1 Cup — 2026 Pick'em</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700&family=Teko:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pitch: #1a6b3c;
+  --pitch-dark: #0f4526;
+  --pitch-light: #2d8f54;
+  --gold: #f5c842;
+  --gold-dark: #c9a020;
+  --red: #e03131;
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #484f58;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:15px;min-height:100vh}
+
+/* ── HEADER ── */
+.site-header{background:var(--pitch-dark);border-bottom:3px solid var(--gold);padding:0 1.5rem;position:sticky;top:0;z-index:100}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:1rem;height:56px}
+.site-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);letter-spacing:.04em;line-height:1}
+.site-logo span{color:#fff;font-size:14px;font-family:'Syne',sans-serif;font-weight:500;margin-left:8px;opacity:.7}
+.header-tabs{display:flex;gap:2px;margin-left:auto}
+.htab{padding:6px 14px;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:'Syne',sans-serif;font-weight:500;transition:all .15s}
+.htab:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.htab.active{background:var(--gold);color:#000;font-weight:600}
+.sync-bar{font-size:11px;color:var(--text2);padding:4px 10px;border-radius:4px;background:rgba(255,255,255,.04);margin-left:.5rem}
+.sync-bar.syncing{color:var(--gold)}
+.sync-bar.error{color:var(--red)}
+
+/* ── LAYOUT ── */
+.main{max-width:1100px;margin:0 auto;padding:1.5rem}
+.section{display:none}.section.active{display:block}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.04em;color:var(--gold);margin-bottom:4px}
+.page-sub{font-size:14px;color:var(--text2);margin-bottom:1.25rem}
+
+/* ── CARDS / SURFACES ── */
+.card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:1.25rem}
+.card-sm{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem}
+
+/* ── FORM ELEMENTS ── */
+.form-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:.75rem}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+.form-hint{font-size:11px;color:var(--text3)}
+input[type=text],input[type=number],input[type=password]{
+  height:38px;padding:0 12px;border:1px solid var(--border2);border-radius:var(--radius);
+  background:var(--surface2);color:var(--text);font-size:14px;font-family:'Syne',sans-serif;
+  width:180px;transition:border-color .15s}
+input[type=text]:focus,input[type=number]:focus,input[type=password]:focus{outline:none;border-color:var(--gold)}
+input[type=number]{width:100px}
+input[type=password]{width:180px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;font-size:13px;font-family:'Syne',sans-serif;font-weight:600;transition:all .15s}
+.btn:hover{border-color:rgba(255,255,255,.3);background:var(--surface)}
+.btn-gold{background:var(--gold);color:#000;border-color:var(--gold)}
+.btn-gold:hover{background:var(--gold-dark);border-color:var(--gold-dark)}
+.btn-danger{background:rgba(224,49,49,.15);color:#ff6b6b;border-color:rgba(224,49,49,.3)}
+.btn-danger:hover{background:rgba(224,49,49,.25)}
+.msg-ok{font-size:13px;color:#3fb950;font-weight:500}
+.msg-err{font-size:13px;color:#ff7b72;font-weight:500}
+
+/* ── ACTIVE ENTRY BAR ── */
+.entry-bar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.25);border-radius:var(--radius);margin-bottom:1.25rem;font-size:13px}
+.entry-bar-name{font-weight:600;color:var(--gold)}
+
+/* ── POINTS LEGEND ── */
+.pts-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;padding:10px 14px;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius)}
+.pt-chip{font-size:12px;color:var(--text2);padding:3px 10px;background:var(--surface2);border-radius:20px}
+.pt-chip b{color:var(--gold)}
+
+/* ── GROUPS GRID ── */
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:10px}
+.group-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:12px}
+.group-label{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);margin-bottom:8px;letter-spacing:.06em}
+.team-item{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:0.5px solid var(--border);cursor:grab;border-radius:6px;transition:background .1s}
+.team-item:last-child{border-bottom:none}
+.team-item:hover{background:var(--surface2)}
+.team-item.dragging{opacity:.3}
+.team-item.drag-over{border-top:2px solid var(--gold)}
+.rank-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.r1{background:var(--gold);color:#000}
+.r2{background:#8b949e;color:#000}
+.r3{background:#6e4b2a;color:#f0c080}
+.r4{background:var(--surface2);color:var(--text3)}
+.team-flag{font-size:17px;line-height:1}
+.team-name{font-size:12px;color:var(--text);flex:1;line-height:1.2}
+.grip{color:var(--text3);font-size:12px}
+
+/* ── BRACKET ── */
+.round-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text);letter-spacing:.04em;margin:1.75rem 0 .75rem;border-left:3px solid var(--gold);padding-left:10px}
+.matches-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:.5rem}
+.match-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px}
+.match-lbl{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
+.match-team{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:7px;cursor:pointer;transition:background .1s}
+.match-team:hover:not(.tbd){background:var(--surface2)}
+.match-team.picked{background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.4)}
+.match-team.tbd{opacity:.4;cursor:default}
+.mt-name{font-size:12px;color:var(--text);flex:1}
+.match-team.picked .mt-name{color:var(--gold);font-weight:600}
+.vs{text-align:center;font-size:10px;color:var(--text3);font-weight:700;letter-spacing:.1em;padding:2px 0}
+
+/* ── LEADERBOARD ── */
+.lb-wrap{overflow-x:auto}
+table.lb{width:100%;border-collapse:collapse;font-size:13px}
+.lb th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);border-bottom:1px solid var(--border2)}
+.lb td{padding:9px 12px;border-bottom:0.5px solid var(--border);color:var(--text)}
+.lb tr:first-child td{background:rgba(245,200,66,.06)}
+.lb tr:first-child td:first-child{border-radius:var(--radius) 0 0 0}
+.lb .pts{font-weight:700;color:var(--gold);text-align:right}
+.lb .rank{color:var(--text2);font-weight:700;width:32px}
+.lb .right{text-align:right}
+.medal-1::before{content:"🥇 "}
+.medal-2::before{content:"🥈 "}
+.medal-3::before{content:"🥉 "}
+
+/* ── ADMIN ── */
+.pw-gate{max-width:320px;margin:2rem 0}
+.admin-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:10px}
+.admin-group{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px}
+.admin-group-lbl{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);margin-bottom:6px;letter-spacing:.04em}
+.admin-team-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:12px;color:var(--text)}
+select.pos{font-size:12px;padding:2px 6px;border:1px solid var(--border2);border-radius:5px;background:var(--surface2);color:var(--text);font-family:'Syne',sans-serif}
+.entrant-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.entrant-row:last-child{border-bottom:none}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.badge-ok{background:rgba(63,185,80,.15);color:#3fb950}
+.badge-warn{background:rgba(245,200,66,.15);color:var(--gold)}
+.tag-active{background:rgba(245,200,66,.2);color:var(--gold);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+
+/* ── ENTRY LIST ── */
+.entry-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface2);border:0.5px solid var(--border2);border-radius:20px;font-size:12px;cursor:pointer;margin:3px;transition:all .15s}
+.entry-pill:hover{border-color:var(--gold);color:var(--gold)}
+.entry-pill.active-pill{background:rgba(245,200,66,.15);border-color:rgba(245,200,66,.5);color:var(--gold)}
+
+/* ── NOTE BOX ── */
+.note{padding:11px 14px;background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.2);border-radius:var(--radius);font-size:13px;color:var(--text2);margin-bottom:1rem}
+
+/* ── SETUP GUIDE ── */
+.setup-steps{counter-reset:steps}
+.step{counter-increment:steps;display:flex;gap:14px;margin-bottom:1rem;align-items:flex-start}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-body{flex:1}
+.step-body p{font-size:14px;color:var(--text);line-height:1.6}
+.step-body code{background:var(--surface2);border:0.5px solid var(--border2);border-radius:4px;padding:2px 7px;font-size:12px;font-family:monospace;color:var(--gold)}
+a{color:var(--gold);text-decoration:none}.a:hover{text-decoration:underline}
+
+@media(max-width:600px){
+  .header-tabs{gap:1px}.htab{padding:6px 8px;font-size:12px}
+  .site-logo span{display:none}
+  .groups-grid{grid-template-columns:1fr 1fr}
+  .matches-grid{grid-template-columns:1fr 1fr}
+}
+
+/* ── HERO BANNER ── */
+.hero{position:relative;overflow:hidden;background:var(--pitch-dark);border-bottom:1px solid rgba(245,200,66,.15);padding:3rem 1.5rem 2.5rem;text-align:center;margin-bottom:2rem}
+.hero::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.03) 39px,rgba(255,255,255,.03) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.03) 39px,rgba(255,255,255,.03) 40px);pointer-events:none}
+.hero::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse at center,rgba(27,107,60,.5) 0%,transparent 70%);pointer-events:none}
+.hero-eyebrow{font-family:'Teko',sans-serif;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:rgba(245,200,66,.6);margin-bottom:.4rem;position:relative}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,9vw,88px);line-height:.95;letter-spacing:.02em;color:#fff;position:relative;margin-bottom:.6rem}
+.hero-title span{color:var(--gold);display:block}
+.hero-sub{font-family:'Teko',sans-serif;font-size:17px;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);position:relative}
+.hero-divider{width:60px;height:3px;background:var(--gold);margin:.9rem auto;position:relative}
+.hero-meta{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-top:1.25rem;position:relative}
+.hero-chip{display:flex;flex-direction:column;align-items:center;gap:2px}
+.hero-chip-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);line-height:1}
+.hero-chip-lbl{font-size:11px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase}
+
+/* ── ENHANCED HEADER ── */
+.logo-main{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);letter-spacing:.06em;line-height:1}
+.logo-sub{font-family:'Teko',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);line-height:1}
+
+/* ── PITCH LINES BG on group cards ── */
+.group-card{background-image:repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,255,255,.02) 49px,rgba(255,255,255,.02) 50px)}
+
+/* ── GOLD GLOW on picked match teams ── */
+.match-team.picked{box-shadow:0 0 0 1px rgba(245,200,66,.4),inset 0 0 12px rgba(245,200,66,.05)}
+
+/* ── LEADERBOARD TOP ROW GLOW ── */
+.lb tr:first-child td{background:rgba(245,200,66,.06);position:relative}
+.lb-trophy::before{content:'⚽ ';font-size:14px}
+
+/* ── ANIMATED SYNC DOT ── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-bar.syncing .dot{animation:pulse .8s ease-in-out infinite}
+
+/* ── KICK OFF COUNTDOWN ── */
+.countdown-bar{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;padding:.6rem 1rem;background:rgba(0,0,0,.3);border-top:1px solid rgba(245,200,66,.1)}
+.cd-unit{text-align:center}
+.cd-num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);line-height:1}
+.cd-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+
+/* ── PAGE TITLE ACCENT ── */
+.page-title{position:relative;display:inline-block}
+.page-title::after{content:'';position:absolute;bottom:-4px;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--gold),transparent)}
+
+/* ── ROUND TITLE PULSE ── */
+.round-title{position:relative;overflow:hidden}
+
+/* ── FOOTER ── */
+.site-footer{text-align:center;padding:1.5rem;font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;border-top:1px solid var(--border);margin-top:3rem}
+
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div><div class="logo-main">1 World, 1 Cup</div><div class="logo-sub">2026 Pick'em</div></div>
+    <div class="header-tabs">
+      <button class="htab active" onclick="showTab('register')">Register</button>
+      <button class="htab" onclick="showTab('groups')">Groups</button>
+      <button class="htab" onclick="showTab('bracket')">Bracket</button>
+      <button class="htab" onclick="showTab('leaderboard')">Leaderboard</button>
+      <button class="htab" onclick="showTab('admin')">Admin</button>
+    </div>
+    <div class="sync-bar" id="syncBar">&#x25CF; live</div>
+  </div>
+</header>
+
+<main class="main">
+
+<div class="hero">
+  <p class="hero-eyebrow">USA · Canada · Mexico &nbsp;·&nbsp; June 11 – July 19, 2026</p>
+  <h1 class="hero-title">1 World<span>1 Cup.</span></h1>
+  <div class="hero-divider"></div>
+  <p class="hero-sub">The greatest tournament on earth &mdash; pick your path to glory</p>
+  <div class="hero-meta">
+    <div class="hero-chip"><span class="hero-chip-val">48</span><span class="hero-chip-lbl">Nations</span></div>
+    <div class="hero-chip"><span class="hero-chip-val">12</span><span class="hero-chip-lbl">Groups</span></div>
+    <div class="hero-chip"><span class="hero-chip-val">104</span><span class="hero-chip-lbl">Matches</span></div>
+    <div class="hero-chip"><span class="hero-chip-val">39</span><span class="hero-chip-lbl">Days</span></div>
+    <div class="hero-chip"><span class="hero-chip-val">1</span><span class="hero-chip-lbl">Champion</span></div>
+  </div>
+</div>
+<div class="countdown-bar" id="countdownBar">
+  <div class="cd-unit"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">Days</div></div>
+  <div class="cd-unit"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">Hrs</div></div>
+  <div class="cd-unit"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">Min</div></div>
+  <div class="cd-unit"><div class="cd-num" id="cd-s">--</div><div class="cd-lbl">Sec</div></div>
+</div>
+
+<!-- REGISTER -->
+<div id="register" class="section active">
+  <p class="page-title">Join the Pick'em</p>
+  <p class="page-sub">Create your entry, then rank the groups and call the bracket all the way to the final.</p>
+
+  <div id="setupNotice" style="display:none" class="card" style="margin-bottom:1.5rem;max-width:600px">
+    <p style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);margin-bottom:.75rem">&#x26A0; Storage not configured</p>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:1rem">To share this pick'em with others, configure jsonbin.io storage. Until then, picks are saved locally in this browser only.</p>
+    <div class="setup-steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><p>Go to <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> and create a free account.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><p>After login, click your avatar → <strong>API Keys</strong> → copy your Master Key.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><p>Open <code>index.html</code> in a text editor. Find the line <code>const JSONBIN_KEY = ""</code> near the top of the script and paste your key inside the quotes.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><p>Save the file and push to GitHub Pages. Your pick'em will now sync across all participants.</p></div></div>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:460px;margin-bottom:1.5rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="form-group">
+        <label class="form-label">Your name</label>
+        <input type="text" id="regName" placeholder="e.g. Andrew" style="width:100%" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Entry name</label>
+        <input type="text" id="regEntry" placeholder="e.g. Dark Horses FC" style="width:100%" />
+        <span class="form-hint">Give your picks a fun name</span>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="form-group">
+        <label class="form-label">Tiebreaker — total tournament goals</label>
+        <input type="number" id="regGoals" placeholder="e.g. 185" min="0" max="600" step="1" style="width:140px" />
+        <span class="form-hint">Closest to actual total wins tiebreaker. 104 matches in 2026.</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="registerEntry()">&#x2713; Create entry</button>
+      <span id="regStatus" class="msg-ok"></span>
+      <span id="regError" class="msg-err"></span>
+    </div>
+  </div>
+
+  <div id="switchBox" style="max-width:500px">
+    <p style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Switch to existing entry</p>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:.75rem">
+      <div class="form-group">
+        <label class="form-label">Entry name</label>
+        <input type="text" id="switchName" placeholder="Your entry name" />
+      </div>
+      <button class="btn" onclick="switchEntry()">Load entry</button>
+      <span id="switchErr" class="msg-err"></span>
+    </div>
+    <div id="entryPills"></div>
+  </div>
+</div>
+
+<!-- GROUP PICKS -->
+<div id="groups" class="section">
+  <div id="groupEntryBar" class="entry-bar" style="display:none">
+    <span>Picking as:</span><span class="entry-bar-name" id="groupEntryName"></span>
+    <button class="btn" style="margin-left:auto;padding:4px 10px;font-size:12px" onclick="showTab('register')">Switch</button>
+  </div>
+  <div id="groupWarn" class="note" style="display:none">&#x26A0; Register an entry first before making picks.</div>
+  <p class="page-title">Group picks</p>
+  <p class="page-sub">Drag teams to rank their finishing position (1st–4th) in each group.</p>
+  <div class="pts-bar">
+    <span class="pt-chip"><b>1 pt</b> per correct finish position</span>
+    <span class="pt-chip">Max 4 pts / group &middot; 48 pts total</span>
+  </div>
+  <div class="groups-grid" id="groupsGrid"></div>
+  <div style="margin-top:1.25rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-gold" onclick="saveGroupPicks()">&#x1F4BE; Save group picks</button>
+    <span id="groupSaveMsg" class="msg-ok"></span>
+  </div>
+</div>
+
+<!-- BRACKET -->
+<div id="bracket" class="section">
+  <div id="bracketEntryBar" class="entry-bar" style="display:none">
+    <span>Picking as:</span><span class="entry-bar-name" id="bracketEntryName"></span>
+    <button class="btn" style="margin-left:auto;padding:4px 10px;font-size:12px" onclick="showTab('register')">Switch</button>
+  </div>
+  <p class="page-title">Knockout bracket</p>
+  <p class="page-sub">Click a team to pick them to advance. Picks cascade round by round.</p>
+  <div class="pts-bar">
+    <span class="pt-chip"><b>1 pt</b> R32</span>
+    <span class="pt-chip"><b>2 pts</b> R16</span>
+    <span class="pt-chip"><b>4 pts</b> QF</span>
+    <span class="pt-chip"><b>8 pts</b> SF</span>
+    <span class="pt-chip"><b>16 pts</b> Final</span>
+    <span class="pt-chip"><b>4 pts</b> 3rd place</span>
+  </div>
+  <div id="bracketNote" class="note">&#x1F6C8; The bracket populates once group results are entered in Admin. You can pick now — teams will be matched once confirmed.</div>
+  <div id="bracketContent"></div>
+  <div style="margin-top:1.25rem;display:flex;gap:10px;align-items:center">
+    <button class="btn btn-gold" onclick="saveBracketPicks()">&#x1F4BE; Save bracket picks</button>
+    <span id="bracketSaveMsg" class="msg-ok"></span>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="leaderboard" class="section">
+  <p class="page-title">⚽ Standings</p>
+  <p class="page-sub">Updated live as results come in. Tiebreaker: closest total goals guess wins.</p>
+  <div class="lb-wrap"><div id="lbContent"></div></div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="section">
+  <div id="adminGate">
+    <p class="page-title">Admin</p>
+    <div class="pw-gate card-sm" style="max-width:300px">
+      <p style="font-weight:600;margin-bottom:.75rem">&#x1F512; Password required</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input type="password" id="adminPw" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()" />
+        <button class="btn btn-gold" onclick="checkPw()">Unlock</button>
+        <span id="pwErr" class="msg-err"></span>
+      </div>
+    </div>
+  </div>
+  <div id="adminContent" style="display:none">
+    <p class="page-title">Admin panel</p>
+    <div class="card-sm" style="max-width:420px;margin-bottom:1rem">
+      <p style="font-size:13px;font-weight:600;margin-bottom:.6rem;color:var(--text2)">TIEBREAKER — Actual total goals</p>
+      <div style="display:flex;gap:10px;align-items:flex-end">
+        <input type="number" id="adminGoals" placeholder="e.g. 185" min="0" step="1" />
+        <button class="btn" onclick="saveAdminGoals()">Save</button>
+        <span id="adminGoalMsg" class="msg-ok"></span>
+      </div>
+    </div>
+    <div class="card-sm" style="margin-bottom:1rem">
+      <p style="font-size:13px;font-weight:600;margin-bottom:.75rem;color:var(--text2)">GROUP STAGE RESULTS — Set actual finishing positions (1–4)</p>
+      <div class="admin-groups" id="adminGroups"></div>
+      <div style="margin-top:1rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-gold" onclick="saveAdminResults()">&#x2713; Save group results</button>
+        <button class="btn" onclick="resetAdminResults()">&#x21BA; Reset</button>
+        <span id="adminResultMsg" class="msg-ok"></span>
+      </div>
+    </div>
+    <div class="card-sm" style="margin-bottom:1rem">
+      <p style="font-size:13px;font-weight:600;margin-bottom:.75rem;color:var(--text2)">ENTRANTS (<span id="entrantCount">0</span>)</p>
+      <div id="adminEntrants"></div>
+      <div style="margin-top:.75rem;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-danger" onclick="clearAll()">&#x1F5D1; Clear all entrants</button>
+        <button class="btn" onclick="lockAdmin()">&#x1F512; Lock admin</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ─────────────────────────────────────────────────
+// CONFIG — paste your jsonbin.io Master Key here
+const JSONBIN_KEY = "$2a$10$cS1dcvbb9wIO193eEXn7CujuxEELPOvW2OI/bhFLORteiGwZsBo9e";
+const BIN_ID_KEY  = "wc26_bin_id";
+// ─────────────────────────────────────────────────
+
+const ADMIN_PW = "andrew123";
+
+const GROUPS = {
+  A:["Mexico","South Africa","South Korea","Czechia"],
+  B:["Canada","Bosnia-Herzegovina","Qatar","Switzerland"],
+  C:["Brazil","Morocco","Haiti","Scotland"],
+  D:["United States","Paraguay","Australia","Türkiye"],
+  E:["Germany","Curaçao","Ivory Coast","Ecuador"],
+  F:["Netherlands","Japan","Sweden","Tunisia"],
+  G:["Belgium","Egypt","Iran","New Zealand"],
+  H:["Spain","Cape Verde","Saudi Arabia","Uruguay"],
+  I:["France","Senegal","Iraq","Norway"],
+  J:["Argentina","Algeria","Austria","Jordan"],
+  K:["Portugal","DR Congo","Uzbekistan","Colombia"],
+  L:["England","Croatia","Ghana","Panama"]
+};
+
+const FLAG_CODES = {
+  "Mexico":"mx","South Africa":"za","South Korea":"kr","Czechia":"cz",
+  "Canada":"ca","Bosnia-Herzegovina":"ba","Qatar":"qa","Switzerland":"ch",
+  "Brazil":"br","Morocco":"ma","Haiti":"ht","Scotland":"gb-sct",
+  "United States":"us","Paraguay":"py","Australia":"au","Türkiye":"tr",
+  "Germany":"de","Curaçao":"cw","Ivory Coast":"ci","Ecuador":"ec",
+  "Netherlands":"nl","Japan":"jp","Sweden":"se","Tunisia":"tn",
+  "Belgium":"be","Egypt":"eg","Iran":"ir","New Zealand":"nz",
+  "Spain":"es","Cape Verde":"cv","Saudi Arabia":"sa","Uruguay":"uy",
+  "France":"fr","Senegal":"sn","Iraq":"iq","Norway":"no",
+  "Argentina":"ar","Algeria":"dz","Austria":"at","Jordan":"jo",
+  "Portugal":"pt","DR Congo":"cd","Uzbekistan":"uz","Colombia":"co",
+  "England":"gb-eng","Croatia":"hr","Ghana":"gh","Panama":"pa"
+};
+function flag(team){
+  const code = FLAG_CODES[team];
+  if(!code) return "🏳";
+  return `<img src="https://flagcdn.com/24x18/${code}.png" width="24" height="18" alt="${team}" style="border-radius:2px;vertical-align:middle;object-fit:cover">`;
+}
+const FLAGS = FLAG_CODES;
+
+// ── STATE ──────────────────────────────────────────
+let S = { entries:{}, adminResults:{}, adminGoals:null, currentEntry:null, adminUnlocked:false };
+let syncTimer = null;
+
+function loadLocal(){ try{ const d=localStorage.getItem("wc26_state"); if(d) Object.assign(S, JSON.parse(d)); } catch(e){} }
+function saveLocal(){ try{ localStorage.setItem("wc26_state", JSON.stringify(S)); } catch(e){} }
+
+// ── JSONBIN SYNC ───────────────────────────────────
+function setSyncBar(txt, cls){ const b=document.getElementById("syncBar"); b.textContent=txt; b.className="sync-bar"+(cls?" "+cls:""); }
+
+async function jbFetch(url, opts){
+  const headers = {"Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY, "X-Bin-Versioning":"false"};
+  const r = await fetch(url, {...opts, headers:{...headers,...(opts.headers||{})}});
+  if(!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+async function loadRemote(){
+  if(!JSONBIN_KEY){ document.getElementById("setupNotice").style.display="block"; return; }
+  const binId = localStorage.getItem(BIN_ID_KEY);
+  setSyncBar("● syncing…","syncing");
+  try {
+    if(binId){
+      const d = await jbFetch(`https://api.jsonbin.io/v3/b/${binId}/latest`);
+      Object.assign(S, d.record);
+      saveLocal();
+      setSyncBar("● live");
+    } else {
+      const d = await jbFetch("https://api.jsonbin.io/v3/b", {method:"POST", body: JSON.stringify(S), headers:{"X-Bin-Name":"wc26pickem","X-Collection-Id":""}});
+      localStorage.setItem(BIN_ID_KEY, d.metadata.id);
+      setSyncBar("● live");
+    }
+  } catch(e){ setSyncBar("● offline","error"); }
+}
+
+async function pushRemote(){
+  if(!JSONBIN_KEY) return;
+  const binId = localStorage.getItem(BIN_ID_KEY);
+  if(!binId) return;
+  setSyncBar("● saving…","syncing");
+  try {
+    await jbFetch(`https://api.jsonbin.io/v3/b/${binId}`, {method:"PUT", body: JSON.stringify(S)});
+    setSyncBar("● live");
+  } catch(e){ setSyncBar("● offline","error"); }
+}
+
+function syncDebounced(){ saveLocal(); clearTimeout(syncTimer); syncTimer=setTimeout(pushRemote,1200); }
+
+// ── TABS ───────────────────────────────────────────
+function showTab(name){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".htab").forEach(t=>t.classList.remove("active"));
+  document.getElementById(name).classList.add("active");
+  const names=["register","groups","bracket","leaderboard","admin"];
+  const tabs=document.querySelectorAll(".htab");
+  const idx=names.indexOf(name); if(tabs[idx]) tabs[idx].classList.add("active");
+  if(name==="register") renderEntryPills();
+  if(name==="groups"){ updateEntryBars(); renderGroups(); }
+  if(name==="bracket"){ updateEntryBars(); renderBracket(); }
+  if(name==="leaderboard") renderLeaderboard();
+  if(name==="admin") renderAdminGate();
+}
+
+function updateEntryBars(){
+  const e = S.currentEntry && S.entries[S.currentEntry];
+  ["group","bracket"].forEach(pre=>{
+    const bar=document.getElementById(pre+"EntryBar");
+    const lbl=document.getElementById(pre+"EntryName");
+    const warn=document.getElementById(pre==="group"?"groupWarn":null);
+    if(e){ bar.style.display="flex"; lbl.textContent=`${S.entries[S.currentEntry].entryName} (${S.entries[S.currentEntry].name})`; }
+    else { bar.style.display="none"; }
+    if(warn) warn.style.display=e?"none":"block";
+  });
+}
+
+// ── REGISTER ──────────────────────────────────────
+function registerEntry(){
+  const name=document.getElementById("regName").value.trim();
+  const entry=document.getElementById("regEntry").value.trim();
+  const goals=parseInt(document.getElementById("regGoals").value)||0;
+  const err=document.getElementById("regError");
+  err.textContent="";
+  if(!name){ err.textContent="Enter your name."; return; }
+  if(!entry){ err.textContent="Enter an entry name."; return; }
+  if(!goals){ err.textContent="Enter a tiebreaker guess."; return; }
+  if(S.entries[entry] && S.entries[entry].name!==name){ err.textContent="That entry name is taken by someone else."; return; }
+  S.entries[entry]={ name, entryName:entry, goals, joined: new Date().toLocaleDateString(), groupPicks:{}, bracketPicks:{} };
+  S.currentEntry=entry;
+  syncDebounced();
+  document.getElementById("regStatus").textContent="Entry created — go make your picks!";
+  setTimeout(()=>document.getElementById("regStatus").textContent="",3000);
+  renderEntryPills(); updateEntryBars();
+}
+
+function switchEntry(){
+  const val=document.getElementById("switchName").value.trim();
+  if(!S.entries[val]){ document.getElementById("switchErr").textContent="Entry not found."; return; }
+  document.getElementById("switchErr").textContent="";
+  S.currentEntry=val; saveLocal();
+  renderEntryPills(); updateEntryBars();
+  showTab("groups");
+}
+
+function renderEntryPills(){
+  const el=document.getElementById("entryPills");
+  const keys=Object.keys(S.entries);
+  if(!keys.length){ el.innerHTML=`<p style="font-size:13px;color:var(--text2)">No entries yet.</p>`; return; }
+  el.innerHTML=`<p style="font-size:12px;color:var(--text2);margin-bottom:5px">Click an entry to switch to it:</p>`+
+    keys.map(k=>`<span class="entry-pill${S.currentEntry===k?" active-pill":""}" onclick="quickSwitch('${k}')">${k} <small style="opacity:.6">${S.entries[k].name}</small>${S.currentEntry===k?' <span style="font-size:10px">✓</span>':''}</span>`).join("");
+}
+
+function quickSwitch(k){ S.currentEntry=k; saveLocal(); renderEntryPills(); updateEntryBars(); }
+
+// ── GROUP PICKS ────────────────────────────────────
+function renderGroups(){
+  const grid=document.getElementById("groupsGrid"); grid.innerHTML="";
+  const entry=S.currentEntry&&S.entries[S.currentEntry];
+  Object.entries(GROUPS).forEach(([grp,teams])=>{
+    const saved=(entry&&entry.groupPicks&&entry.groupPicks[grp])||[...teams];
+    const card=document.createElement("div"); card.className="group-card";
+    card.innerHTML=`<div class="group-label">Group ${grp}</div>`;
+    const list=document.createElement("div"); list.dataset.group=grp;
+    saved.forEach((team,i)=>{
+      const item=document.createElement("div");
+      item.className="team-item"; item.draggable=true; item.dataset.team=team;
+      item.innerHTML=`<span class="grip">⠿</span><span class="rank-num r${i+1}">${i+1}</span><span class="team-flag">${flag(team)}</span><span class="team-name">${team}</span>`;
+      addDrag(item,list); list.appendChild(item);
+    });
+    card.appendChild(list); grid.appendChild(card);
+  });
+}
+
+let dragSrc=null;
+function addDrag(item,list){
+  item.addEventListener("dragstart",e=>{ dragSrc=item; item.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; });
+  item.addEventListener("dragend",()=>{ item.classList.remove("dragging"); rebadge(list); });
+  item.addEventListener("dragover",e=>{ e.preventDefault(); if(item!==dragSrc) item.classList.add("drag-over"); });
+  item.addEventListener("dragleave",()=>item.classList.remove("drag-over"));
+  item.addEventListener("drop",e=>{
+    e.preventDefault(); item.classList.remove("drag-over");
+    if(dragSrc&&dragSrc!==item){
+      const items=[...list.querySelectorAll(".team-item")];
+      const si=items.indexOf(dragSrc),ti=items.indexOf(item);
+      if(si<ti) list.insertBefore(dragSrc,item.nextSibling); else list.insertBefore(dragSrc,item);
+    }
+    rebadge(list);
+  });
+}
+
+function rebadge(list){
+  list.querySelectorAll(".team-item").forEach((item,i)=>{
+    const b=item.querySelector(".rank-num"); b.className=`rank-num r${i+1}`; b.textContent=i+1;
+  });
+}
+
+function saveGroupPicks(){
+  if(!S.currentEntry){ showMsg("groupSaveMsg","Register an entry first.","err"); return; }
+  const e=S.entries[S.currentEntry];
+  document.querySelectorAll("[data-group]").forEach(list=>{
+    const grp=list.dataset.group; if(!grp||!GROUPS[grp]) return;
+    const teams=[...list.querySelectorAll(".team-item")].map(i=>i.dataset.team);
+    if(teams.length) e.groupPicks[grp]=teams;
+  });
+  syncDebounced(); showMsg("groupSaveMsg","Picks saved!","ok");
+}
+
+// ── BRACKET ───────────────────────────────────────
+function getAdv(){
+  const adv={};
+  Object.entries(GROUPS).forEach(([g,teams])=>{
+    const res=S.adminResults[g];
+    if(res){ adv[g]=[...teams].sort((a,b)=>(res[a]||99)-(res[b]||99)); }
+    else adv[g]=[...teams];
+  });
+  return adv;
+}
+
+function renderBracket(){
+  const hasAll=Object.keys(S.adminResults).length===12;
+  document.getElementById("bracketNote").style.display=hasAll?"none":"block";
+  const adv=getAdv();
+  const entry=S.currentEntry&&S.entries[S.currentEntry];
+  const bp=(entry&&entry.bracketPicks)||{};
+
+  const r32=[
+    {id:"r32_1",lbl:"R32 · 1",t1:adv.A[0],t2:adv.C[1]},
+    {id:"r32_2",lbl:"R32 · 2",t1:adv.B[0],t2:adv.D[1]},
+    {id:"r32_3",lbl:"R32 · 3",t1:adv.C[0],t2:adv.A[1]},
+    {id:"r32_4",lbl:"R32 · 4",t1:adv.D[0],t2:adv.B[1]},
+    {id:"r32_5",lbl:"R32 · 5",t1:adv.E[0],t2:adv.G[1]},
+    {id:"r32_6",lbl:"R32 · 6",t1:adv.F[0],t2:adv.H[1]},
+    {id:"r32_7",lbl:"R32 · 7",t1:adv.G[0],t2:adv.E[1]},
+    {id:"r32_8",lbl:"R32 · 8",t1:adv.H[0],t2:adv.F[1]},
+    {id:"r32_9",lbl:"R32 · 9",t1:adv.I[0],t2:adv.K[1]},
+    {id:"r32_10",lbl:"R32 · 10",t1:adv.J[0],t2:adv.L[1]},
+    {id:"r32_11",lbl:"R32 · 11",t1:adv.K[0],t2:adv.I[1]},
+    {id:"r32_12",lbl:"R32 · 12",t1:adv.L[0],t2:adv.J[1]},
+    {id:"r32_13",lbl:"R32 · 13 (3rd wild)",t1:"TBD",t2:"TBD"},
+    {id:"r32_14",lbl:"R32 · 14 (3rd wild)",t1:"TBD",t2:"TBD"},
+    {id:"r32_15",lbl:"R32 · 15 (3rd wild)",t1:"TBD",t2:"TBD"},
+    {id:"r32_16",lbl:"R32 · 16 (3rd wild)",t1:"TBD",t2:"TBD"},
+  ];
+
+  function nextRound(prev, n, lblFn){
+    return Array.from({length:n},(_,i)=>{
+      const m1=prev[i*2], m2=prev[i*2+1];
+      return {id:`${m1.id}_nx${i}`, lbl:lblFn(i), t1:bp[m1.id]||"TBD", t2:bp[m2.id]||"TBD"};
+    });
+  }
+
+  const r16=nextRound(r32,8,i=>`R16 · ${i+1}`);
+  const qf=nextRound(r16,4,i=>`QF · ${i+1}`);
+  const sf=nextRound(qf,2,i=>`SF · ${i+1}`);
+  const fin=[
+    {id:"final",lbl:"Final",t1:bp[sf[0].id]||"TBD",t2:bp[sf[1].id]||"TBD"},
+    {id:"third",lbl:"3rd place match",t1:"TBD",t2:"TBD"}
+  ];
+
+  const rounds=[
+    {lbl:"Round of 32",matches:r32},
+    {lbl:"Round of 16",matches:r16},
+    {lbl:"Quarter-finals",matches:qf},
+    {lbl:"Semi-finals",matches:sf},
+    {lbl:"Final & 3rd place",matches:fin}
+  ];
+
+  let html="";
+  rounds.forEach(round=>{
+    html+=`<p class="round-title">${round.lbl}</p><div class="matches-grid">`;
+    round.matches.forEach(m=>{
+      const p=bp[m.id];
+      const t1tbd=!m.t1||m.t1==="TBD", t2tbd=!m.t2||m.t2==="TBD";
+      const esc=s=>s.replace(/'/g,"\\'");
+      html+=`<div class="match-card">
+        <div class="match-lbl">${m.lbl}</div>
+        <div class="match-team ${p===m.t1?"picked":""} ${t1tbd?"tbd":""}" onclick="${t1tbd?"":"pickB('"+m.id+"','"+esc(m.t1)+"')"}">
+          <span class="team-flag">${t1tbd?"❓":flag(m.t1)}</span>
+          <span class="mt-name">${m.t1||"TBD"}</span>
+          ${p===m.t1?"✓":""}
+        </div>
+        <div class="vs">vs</div>
+        <div class="match-team ${p===m.t2?"picked":""} ${t2tbd?"tbd":""}" onclick="${t2tbd?"":"pickB('"+m.id+"','"+esc(m.t2)+"')"}">
+          <span class="team-flag">${t2tbd?"❓":flag(m.t2)}</span>
+          <span class="mt-name">${m.t2||"TBD"}</span>
+          ${p===m.t2?"✓":""}
+        </div>
+      </div>`;
+    });
+    html+="</div>";
+  });
+  document.getElementById("bracketContent").innerHTML=html;
+}
+
+function pickB(mid,team){
+  if(!S.currentEntry){ alert("Register an entry first."); return; }
+  S.entries[S.currentEntry].bracketPicks[mid]=team;
+  syncDebounced(); renderBracket();
+}
+
+function saveBracketPicks(){
+  if(!S.currentEntry){ showMsg("bracketSaveMsg","Register first.","err"); return; }
+  syncDebounced(); showMsg("bracketSaveMsg","Bracket picks saved!","ok");
+}
+
+// ── LEADERBOARD ───────────────────────────────────
+function renderLeaderboard(){
+  const keys=Object.keys(S.entries);
+  if(!keys.length){ document.getElementById("lbContent").innerHTML=`<p style="color:var(--text2);font-size:14px">No entries yet.</p>`; return; }
+  const actual=S.adminGoals;
+  const scores=keys.map(k=>{
+    const e=S.entries[k];
+    let gp=0;
+    Object.entries(GROUPS).forEach(([grp])=>{
+      const res=S.adminResults[grp], pred=e.groupPicks&&e.groupPicks[grp];
+      if(!res||!pred) return;
+      pred.forEach((team,i)=>{ if(res[team]===i+1) gp++; });
+    });
+    const diff=actual!=null?Math.abs(e.goals-actual):null;
+    return {name:e.name,entry:k,gp,bp:0,total:gp,guess:e.goals,diff};
+  }).sort((a,b)=>{
+    if(b.total!==a.total) return b.total-a.total;
+    if(a.diff!=null&&b.diff!=null) return a.diff-b.diff;
+    return 0;
+  });
+
+  const medals=["medal-1","medal-2","medal-3"];
+  let html=`<table class="lb"><thead><tr>
+    <th>#</th><th>Entry</th><th>Entrant</th>
+    <th class="right">Group pts</th><th class="right">Bracket pts</th>
+    <th class="pts">Total</th><th class="right">Goals guess</th>
+    ${actual!=null?`<th class="right">Diff</th>`:""}
+  </tr></thead><tbody>`;
+  scores.forEach((s,i)=>{
+    const mc=medals[i]||"";
+    html+=`<tr>
+      <td class="rank">${i+1}</td>
+      <td style="font-weight:600" class="${mc}">${s.entry}</td>
+      <td style="color:var(--text2)">${s.name}</td>
+      <td class="right">${s.gp}</td><td class="right">${s.bp}</td>
+      <td class="pts">${s.total}</td>
+      <td class="right" style="color:var(--text2)">${s.guess}</td>
+      ${actual!=null?`<td class="right" style="color:${s.diff===0?"#3fb950":"var(--text2)"}">${s.diff}</td>`:""}
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  if(actual!=null) html+=`<p style="font-size:12px;color:var(--text2);margin-top:.6rem">Actual total goals: <strong style="color:var(--gold)">${actual}</strong> — tiebreaker active</p>`;
+  document.getElementById("lbContent").innerHTML=html;
+}
+
+// ── ADMIN ─────────────────────────────────────────
+function renderAdminGate(){
+  document.getElementById("adminGate").style.display=S.adminUnlocked?"none":"block";
+  document.getElementById("adminContent").style.display=S.adminUnlocked?"block":"none";
+  if(S.adminUnlocked) renderAdminContent();
+}
+
+function checkPw(){
+  if(document.getElementById("adminPw").value===ADMIN_PW){ S.adminUnlocked=true; renderAdminGate(); }
+  else { document.getElementById("pwErr").textContent="Incorrect password."; setTimeout(()=>document.getElementById("pwErr").textContent="",2000); }
+}
+
+function lockAdmin(){ S.adminUnlocked=false; document.getElementById("adminPw").value=""; renderAdminGate(); }
+
+function renderAdminContent(){
+  if(S.adminGoals) document.getElementById("adminGoals").value=S.adminGoals;
+  const ag=document.getElementById("adminGroups"); ag.innerHTML="";
+  Object.entries(GROUPS).forEach(([grp,teams])=>{
+    const div=document.createElement("div"); div.className="admin-group";
+    div.innerHTML=`<div class="admin-group-lbl">Group ${grp}</div>`;
+    teams.forEach(team=>{
+      const cur=S.adminResults[grp]&&S.adminResults[grp][team];
+      const row=document.createElement("div"); row.className="admin-team-row";
+      row.innerHTML=`<span>${flag(team)} ${team}</span>
+        <select class="pos" data-group="${grp}" data-team="${team}">
+          <option value="">-</option>${[1,2,3,4].map(n=>`<option value="${n}"${cur==n?" selected":""}>${n}</option>`).join("")}
+        </select>`;
+      div.appendChild(row);
+    });
+    ag.appendChild(div);
+  });
+  const keys=Object.keys(S.entries);
+  document.getElementById("entrantCount").textContent=keys.length;
+  const ae=document.getElementById("adminEntrants");
+  if(!keys.length){ ae.innerHTML=`<p style="font-size:13px;color:var(--text2)">No entries yet.</p>`; return; }
+  ae.innerHTML=keys.map(k=>{
+    const e=S.entries[k];
+    const gc=Object.keys(e.groupPicks||{}).length;
+    const bc=Object.keys(e.bracketPicks||{}).length;
+    return `<div class="entrant-row">
+      <span style="font-weight:600;min-width:140px">${k}</span>
+      <span style="color:var(--text2);font-size:12px;flex:1">${e.name}</span>
+      <span style="color:var(--text2);font-size:12px">🎯 ${e.goals}</span>
+      <span class="badge ${gc===12?"badge-ok":"badge-warn"}" style="margin-left:6px">${gc}/12</span>
+      <span class="badge ${bc>=16?"badge-ok":"badge-warn"}" style="margin-left:4px">${bc} picks</span>
+    </div>`;
+  }).join("");
+}
+
+function saveAdminGoals(){
+  const v=parseInt(document.getElementById("adminGoals").value); if(!v) return;
+  S.adminGoals=v; syncDebounced(); showMsg("adminGoalMsg","Saved!","ok");
+}
+
+function saveAdminResults(){
+  document.querySelectorAll("select.pos").forEach(sel=>{
+    const g=sel.dataset.group,t=sel.dataset.team,v=parseInt(sel.value);
+    if(!g||!t||!v) return;
+    if(!S.adminResults[g]) S.adminResults[g]={};
+    S.adminResults[g][t]=v;
+  });
+  syncDebounced(); showMsg("adminResultMsg","Results saved!","ok");
+}
+
+function resetAdminResults(){ if(!confirm("Reset all group results?")) return; S.adminResults={}; syncDebounced(); renderAdminContent(); }
+function clearAll(){ if(!confirm("Delete ALL entries? Cannot be undone.")) return; S.entries={}; S.currentEntry=null; syncDebounced(); renderAdminContent(); renderEntryPills(); updateEntryBars(); }
+
+// ── HELPERS ───────────────────────────────────────
+function showMsg(id,txt,type){
+  const el=document.getElementById(id); if(!el) return;
+  el.className=type==="ok"?"msg-ok":"msg-err"; el.textContent=txt;
+  setTimeout(()=>el.textContent="",3000);
+}
+
+
+// ── COUNTDOWN ─────────────────────────────────────
+(function(){
+  const kickoff = new Date("2026-06-11T21:00:00Z");
+  function tick(){
+    const now = new Date();
+    const diff = kickoff - now;
+    if(diff <= 0){
+      document.getElementById("countdownBar").innerHTML = '<p style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);letter-spacing:.1em">&#x26BD; The tournament has kicked off!</p>';
+      return;
+    }
+    const d = Math.floor(diff/86400000);
+    const h = Math.floor((diff%86400000)/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    const s = Math.floor((diff%60000)/1000);
+    document.getElementById("cd-d").textContent = String(d).padStart(2,"0");
+    document.getElementById("cd-h").textContent = String(h).padStart(2,"0");
+    document.getElementById("cd-m").textContent = String(m).padStart(2,"0");
+    document.getElementById("cd-s").textContent = String(s).padStart(2,"0");
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+// ── BOOT ──────────────────────────────────────────
+loadLocal();
+loadRemote().then(()=>{ renderEntryPills(); updateEntryBars(); });
+</script>
+
+<footer class="site-footer">1 World, 1 Cup &nbsp;&bull;&nbsp; 2026 FIFA World Cup Pick'em &nbsp;&bull;&nbsp; Built for the beautiful game</footer>
+</body>
+</html>
