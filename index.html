@@ -172,7 +172,7 @@ a{color:var(--gold);text-decoration:none}.a:hover{text-decoration:underline}
 .hero::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.03) 39px,rgba(255,255,255,.03) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.03) 39px,rgba(255,255,255,.03) 40px);pointer-events:none}
 .hero::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse at center,rgba(27,107,60,.5) 0%,transparent 70%);pointer-events:none}
 .hero-eyebrow{font-family:'Teko',sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(245,200,66,.6);margin-bottom:.4rem;position:relative}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,7vw,88px);line-height:.95;letter-spacing:.02em;color:#fff;position:relative;margin-bottom:.6rem}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,7.5vw,88px);line-height:.95;letter-spacing:.02em;color:#fff;position:relative;margin-bottom:.6rem}
 .hero-title span{color:var(--gold);display:block}
 .hero-sub{font-family:'Teko',sans-serif;font-size:17px;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);position:relative}
 .hero-divider{width:60px;height:3px;background:var(--gold);margin:.9rem auto;position:relative}
@@ -283,7 +283,7 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 
 @media(max-width:480px){
   .hero{padding:1.5rem .75rem 1.25rem}
-  .hero-title{font-size:clamp(28px,11vw,52px) !important}
+  
   .hero-eyebrow{font-size:10px;letter-spacing:.1em}
   .hero-sub{font-size:14px}
   .hero-meta{gap:.75rem}
@@ -297,6 +297,20 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
   .matches-grid{grid-template-columns:1fr 1fr}
   .header-tabs .htab{padding:5px 7px;font-size:11px}
   .site-header{padding:0 .75rem}
+}
+
+
+/* ── TOUCH RANKING ── */
+.rank-arrows{display:none;flex-direction:column;gap:2px;margin-left:auto;flex-shrink:0}
+.rank-btn{width:28px;height:24px;border:0.5px solid var(--border2);border-radius:4px;background:var(--surface2);color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0;-webkit-tap-highlight-color:transparent}
+.rank-btn:active{background:var(--pitch);color:var(--gold);border-color:var(--gold)}
+@media(hover:none),(pointer:coarse){
+  .grip{display:none !important}
+  .team-item{cursor:default !important}
+  .rank-arrows{display:flex !important}
+}
+@media(hover:hover) and (pointer:fine){
+  .rank-arrows{display:none !important}
 }
 
 </style>
@@ -1059,7 +1073,7 @@ function renderGroups(){
     saved.forEach((team,i)=>{
       const item=document.createElement("div");
       item.className="team-item"; item.draggable=!locked; item.dataset.team=team;
-      item.innerHTML=`<span class="grip">⠿</span><span class="rank-num r${i+1}">${i+1}</span><span class="team-flag">${flag(team)}</span><span class="team-name">${team}</span>`;
+      item.innerHTML=`<span class="grip">⠿</span><span class="rank-num r${i+1}">${i+1}</span><span class="team-flag">${flag(team)}</span><span class="team-name">${team}</span><div class="rank-arrows"><button class="rank-btn" onclick="moveTeam(this,'up')" aria-label="Move up">▲</button><button class="rank-btn" onclick="moveTeam(this,'down')" aria-label="Move down">▼</button></div>`;
       addDrag(item,list); list.appendChild(item);
     });
     card.appendChild(list); grid.appendChild(card);
@@ -1122,6 +1136,32 @@ function renderGoalsCard(){
     btn.disabled=false; btn.style.opacity="1";
     hint.innerHTML="Editable until first kick-off (June 11). 104 matches in 2026.";
   }
+}
+
+
+function moveTeam(btn, dir){
+  if(groupsLocked()) return;
+  const item = btn.closest('.team-item');
+  const list = item.parentElement;
+  const items = [...list.querySelectorAll('.team-item')];
+  const idx = items.indexOf(item);
+  if(dir==='up' && idx > 0){
+    list.insertBefore(item, items[idx-1]);
+  } else if(dir==='down' && idx < items.length-1){
+    list.insertBefore(items[idx+1], item);
+  }
+  rebadge(list);
+  autoSaveFromList(list);
+}
+
+function autoSaveFromList(list){
+  if(!S.currentEntry) return;
+  const grp = list.dataset.group;
+  if(!grp) return;
+  const teams = [...list.querySelectorAll('.team-item')].map(i=>i.dataset.team);
+  if(!S.entries[S.currentEntry].groupPicks) S.entries[S.currentEntry].groupPicks={};
+  S.entries[S.currentEntry].groupPicks[grp] = teams;
+  syncDebounced();
 }
 
 function saveGroupPicks(){
