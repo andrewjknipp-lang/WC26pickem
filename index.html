@@ -236,6 +236,13 @@ a{color:var(--gold);text-decoration:none}.a:hover{text-decoration:underline}
 .bracket-pending p{font-size:15px;margin-bottom:.5rem}
 .bracket-pending small{font-size:13px;color:var(--text3)}
 
+
+/* ── PIN ── */
+.pin-row{display:flex;gap:8px;align-items:center}
+input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:center;font-family:'Bebas Neue',sans-serif}
+.pin-hint{font-size:11px;color:var(--text3);margin-top:3px}
+.entry-locked-msg{font-size:13px;color:#ff7b72;font-weight:500;margin-top:4px}
+
 </style>
 </head>
 <body>
@@ -304,10 +311,15 @@ a{color:var(--gold);text-decoration:none}.a:hover{text-decoration:underline}
         <span class="form-hint">Give your picks a fun name</span>
       </div>
     </div>
-    <div style="margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="form-group">
+        <label class="form-label">PIN <span style="font-weight:400;text-transform:none;font-size:11px">(4 digits — protects your entry)</span></label>
+        <input type="password" id="regPin" placeholder="e.g. 1234" maxlength="4" inputmode="numeric" class="pin-input" style="width:100%;letter-spacing:.15em" />
+        <span class="pin-hint">You'll need this to load your entry later. Don't forget it!</span>
+      </div>
       <div class="form-group">
         <label class="form-label">Tiebreaker — total tournament goals</label>
-        <input type="number" id="regGoals" placeholder="e.g. 185" min="0" max="600" step="1" style="width:140px" />
+        <input type="number" id="regGoals" placeholder="e.g. 185" min="0" max="600" step="1" style="width:100%" />
         <span class="form-hint">Closest to actual total wins tiebreaker. 104 matches in 2026.</span>
       </div>
     </div>
@@ -325,7 +337,11 @@ a{color:var(--gold);text-decoration:none}.a:hover{text-decoration:underline}
         <label class="form-label">Entry name</label>
         <input type="text" id="switchName" placeholder="Your entry name" />
       </div>
-      <button class="btn" onclick="switchEntry()">Load entry</button>
+      <div class="form-group">
+        <label class="form-label">PIN</label>
+        <input type="password" id="switchPin" placeholder="••••" maxlength="4" inputmode="numeric" class="pin-input" />
+      </div>
+      <button class="btn" onclick="switchEntry()" style="margin-bottom:0">Load entry</button>
       <span id="switchErr" class="msg-err"></span>
     </div>
     <div id="entryPills"></div>
@@ -446,6 +462,19 @@ const JSONBIN_KEY = "$2a$10$cS1dcvbb9wIO193eEXn7CujuxEELPOvW2OI/bhFLORteiGwZsBo9
 const BIN_ID_KEY  = "wc26_bin_id";
 // ─────────────────────────────────────────────────
 
+
+
+// ── PIN HASHING (djb2) ────────────────────────────────────────────────────────
+function hashPin(pin){
+  let h = 5381;
+  for(let i=0;i<pin.length;i++) h = ((h<<5)+h)^pin.charCodeAt(i);
+  return (h >>> 0).toString(16);
+}
+function checkPin(entryName, pin){
+  const e = S.entries[entryName];
+  if(!e) return false;
+  return e.pinHash === hashPin(String(pin));
+}
 
 // ── DEADLINES ─────────────────────────────────────────────────────────────────
 const GROUP_LOCK    = new Date("2026-06-11T21:00:00Z"); // first kick-off
@@ -633,14 +662,20 @@ function updateEntryBars(){
 function registerEntry(){
   const name=document.getElementById("regName").value.trim();
   const entry=document.getElementById("regEntry").value.trim();
+  const pin=document.getElementById("regPin").value.trim();
   const goals=parseInt(document.getElementById("regGoals").value)||0;
   const err=document.getElementById("regError");
   err.textContent="";
   if(!name){ err.textContent="Enter your name."; return; }
   if(!entry){ err.textContent="Enter an entry name."; return; }
+  if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){ err.textContent="Enter a 4-digit PIN."; return; }
   if(!goals){ err.textContent="Enter a tiebreaker guess."; return; }
-  if(S.entries[entry] && S.entries[entry].name!==name){ err.textContent="That entry name is taken by someone else."; return; }
-  S.entries[entry]={ name, entryName:entry, goals, joined: new Date().toLocaleDateString(), groupPicks:{}, bracketPicks:{} };
+  // If entry exists, verify PIN before allowing re-registration
+  if(S.entries[entry]){
+    if(!checkPin(entry, pin)){ err.textContent="That entry name is taken — wrong PIN."; return; }
+  }
+  const pinHash = hashPin(pin);
+  S.entries[entry]={ name, entryName:entry, goals, pinHash, joined: new Date().toLocaleDateString(), groupPicks:{}, bracketPicks:{} };
   S.currentEntry=entry;
   syncDebounced();
   document.getElementById("regStatus").textContent="Entry created — go make your picks!";
@@ -650,8 +685,11 @@ function registerEntry(){
 
 function switchEntry(){
   const val=document.getElementById("switchName").value.trim();
-  if(!S.entries[val]){ document.getElementById("switchErr").textContent="Entry not found."; return; }
-  document.getElementById("switchErr").textContent="";
+  const pin=document.getElementById("switchPin").value.trim();
+  const err=document.getElementById("switchErr");
+  if(!S.entries[val]){ err.textContent="Entry not found."; return; }
+  if(!checkPin(val, pin)){ err.textContent="Incorrect PIN."; return; }
+  err.textContent="";
   S.currentEntry=val; saveLocal();
   renderEntryPills(); updateEntryBars();
   showTab("groups");
@@ -665,7 +703,13 @@ function renderEntryPills(){
     keys.map(k=>`<span class="entry-pill${S.currentEntry===k?" active-pill":""}" onclick="quickSwitch('${k}')">${k} <small style="opacity:.6">${S.entries[k].name}</small>${S.currentEntry===k?' <span style="font-size:10px">✓</span>':''}</span>`).join("");
 }
 
-function quickSwitch(k){ S.currentEntry=k; saveLocal(); renderEntryPills(); updateEntryBars(); }
+function quickSwitch(k){
+  if(S.currentEntry===k) return;
+  const pin=prompt(`Enter PIN for entry "${k}":`);
+  if(pin===null) return;
+  if(!checkPin(k, pin)){ alert("Incorrect PIN."); return; }
+  S.currentEntry=k; saveLocal(); renderEntryPills(); updateEntryBars();
+}
 
 // ── GROUP PICKS ────────────────────────────────────
 function renderGroups(){
