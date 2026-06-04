@@ -1514,7 +1514,8 @@ function showMsg(id,txt,type){
 
 // ── BOOT ──────────────────────────────────────────
 loadLocal();
-S.currentEntry = null; // always start fresh — user must load their entry
+S.currentEntry = null;    // always start fresh — user must load their entry
+S.adminUnlocked = false;  // always lock admin on page load
 loadRemote().then(()=>{ renderEntryPills(); updateEntryBars(); startESPNPolling(); });
 </script>
 
