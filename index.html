@@ -299,13 +299,23 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
   .rank-arrows{display:none !important}
 }
 
+
+/* ── HEADER LOGO MOBILE ── */
+@media(max-width:520px){
+  .header-logo{display:none}
+}
+@media(max-width:700px){
+  .logo-main{font-size:15px}
+  .logo-sub{display:none}
+}
+
 </style>
 </head>
 <body>
 
 <header class="site-header">
   <div class="header-inner">
-    <div><div class="logo-main">1 World, 1 Cup</div><div class="logo-sub">2026 Pick'em</div></div>
+    <div class="header-logo"><div class="logo-main">1 World, 1 Cup</div><div class="logo-sub">2026 Pick'em</div></div>
     <div class="header-tabs">
       <button class="htab active" onclick="showTab('register')">Register</button>
       <button class="htab" onclick="showTab('groups')">Groups</button>
@@ -318,6 +328,26 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 </header>
 
 <main class="main">
+
+<div class="hero">
+  <p class="hero-eyebrow">USA · Canada · Mexico &nbsp;·&nbsp; June 11 – July 19, 2026</p>
+  <h1 class="hero-title">1 World<span>1 Cup.</span></h1>
+  <div class="hero-divider"></div>
+  <p class="hero-sub">The greatest tournament on earth &mdash; pick your path to glory</p>
+  <div class="hero-meta">
+    <div class="hero-chip"><span class="hero-chip-val">48</span><span class="hero-chip-lbl">Nations</span></div>
+    <div class="hero-chip"><span class="hero-chip-val">12</span><span class="hero-chip-lbl">Groups</span></div>
+    <div class="hero-chip"><span class="hero-chip-val">104</span><span class="hero-chip-lbl">Matches</span></div>
+    <div class="hero-chip"><span class="hero-chip-val">39</span><span class="hero-chip-lbl">Days</span></div>
+    <div class="hero-chip"><span class="hero-chip-val">1</span><span class="hero-chip-lbl">Champion</span></div>
+  </div>
+</div>
+<div class="countdown-bar" id="countdownBar">
+  <div class="cd-unit"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">Days</div></div>
+  <div class="cd-unit"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">Hrs</div></div>
+  <div class="cd-unit"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">Min</div></div>
+  <div class="cd-unit"><div class="cd-num" id="cd-s">--</div><div class="cd-lbl">Sec</div></div>
+</div>
 
 
 <!-- REGISTER -->
