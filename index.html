@@ -841,7 +841,7 @@ function showMsg(id,txt,type){
     const now = new Date();
     const diff = kickoff - now;
     if(diff <= 0){
-      document.getElementById("countdownBar").innerHTML = '<p style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);letter-spacing:.1em">&#x26BD; The tournament has kicked off!</p>';
+      document.getElementById("countdownBar").innerHTML = '<p style="font-family:Bebas Neue,sans-serif;font-size:20px;color:var(--gold);letter-spacing:.1em">&#x26BD; The tournament has kicked off!</p>';
       return;
     }
     const d = Math.floor(diff/86400000);
