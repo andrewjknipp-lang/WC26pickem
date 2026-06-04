@@ -243,6 +243,41 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 .pin-hint{font-size:11px;color:var(--text3);margin-top:3px}
 .entry-locked-msg{font-size:13px;color:#ff7b72;font-weight:500;margin-top:4px}
 
+
+/* ── TRASH TALK WALL ── */
+.wall-wrap{margin-top:2rem}
+.wall-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);letter-spacing:.04em;border-left:3px solid var(--gold);padding-left:10px;margin-bottom:1rem}
+.wall-post{display:flex;gap:10px;margin-bottom:.75rem;align-items:flex-start}
+.wall-avatar{width:32px;height:32px;border-radius:50%;background:var(--pitch);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold);flex-shrink:0;border:1px solid rgba(245,200,66,.3)}
+.wall-bubble{flex:1;background:var(--surface);border:0.5px solid var(--border2);border-radius:0 var(--radius) var(--radius) var(--radius);padding:8px 12px}
+.wall-meta{font-size:11px;color:var(--text3);margin-bottom:3px}
+.wall-meta strong{color:var(--text2);font-weight:600}
+.wall-text{font-size:13px;color:var(--text);line-height:1.5}
+.wall-input-row{display:flex;gap:8px;margin-top:1rem;align-items:flex-end}
+.wall-input-row textarea{flex:1;min-height:60px;padding:8px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-size:13px;font-family:'Syne',sans-serif;resize:vertical}
+.wall-input-row textarea:focus{outline:none;border-color:var(--gold)}
+.wall-empty{font-size:13px;color:var(--text3);padding:1rem 0;font-style:italic}
+.wall-no-entry{font-size:13px;color:var(--text3);padding:.5rem 0}
+
+/* ── LIVE SCORES BADGE ── */
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e03131;margin-right:5px;animation:pulse .9s ease-in-out infinite}
+.scores-section{margin-bottom:1.5rem}
+.scores-title{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text);letter-spacing:.04em;margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+.scores-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.score-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px 12px}
+.score-card.live{border-color:rgba(224,49,49,.4);background:rgba(224,49,49,.04)}
+.score-card.final{border-color:rgba(63,185,80,.2)}
+.score-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.score-status.live{color:#e03131}
+.score-status.final{color:#3fb950}
+.score-status.sched{color:var(--text3)}
+.score-teams{display:flex;flex-direction:column;gap:4px}
+.score-team{display:flex;align-items:center;gap:8px;font-size:13px}
+.score-team-name{flex:1;color:var(--text)}
+.score-team-goals{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);min-width:20px;text-align:right}
+.score-team.winner .score-team-name{color:#fff;font-weight:600}
+.auto-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);padding:3px 8px;background:var(--surface2);border-radius:20px;border:0.5px solid var(--border)}
+
 </style>
 </head>
 <body>
@@ -497,6 +532,248 @@ function checkPin(entryName, pin){
   const e = S.entries[entryName];
   if(!e) return false;
   return e.pinHash === hashPin(String(pin));
+}
+
+
+// ── ESPN AUTO-RESULTS ─────────────────────────────────────────────────────────
+const ESPN_API = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
+
+// Map ESPN team names → our GROUPS team names
+const ESPN_NAME_MAP = {
+  "United States":"United States","USA":"United States","US":"United States",
+  "Mexico":"Mexico","South Africa":"South Africa","South Korea":"South Korea",
+  "Korea Republic":"South Korea","Czech Republic":"Czechia","Czechia":"Czechia",
+  "Canada":"Canada","Bosnia and Herzegovina":"Bosnia-Herzegovina","Bosnia-Herzegovina":"Bosnia-Herzegovina",
+  "Qatar":"Qatar","Switzerland":"Switzerland","Brazil":"Brazil","Morocco":"Morocco",
+  "Haiti":"Haiti","Scotland":"Scotland","Paraguay":"Paraguay","Australia":"Australia",
+  "Turkey":"Türkiye","Türkiye":"Türkiye","Germany":"Germany","Curacao":"Curaçao","Curaçao":"Curaçao",
+  "Ivory Coast":"Ivory Coast","Cote d'Ivoire":"Ivory Coast","Ecuador":"Ecuador",
+  "Netherlands":"Netherlands","Japan":"Japan","Sweden":"Sweden","Tunisia":"Tunisia",
+  "Belgium":"Belgium","Egypt":"Egypt","Iran":"Iran","New Zealand":"New Zealand",
+  "Spain":"Spain","Cape Verde":"Cape Verde","Saudi Arabia":"Saudi Arabia","Uruguay":"Uruguay",
+  "France":"France","Senegal":"Senegal","Iraq":"Iraq","Norway":"Norway",
+  "Argentina":"Argentina","Algeria":"Algeria","Austria":"Austria","Jordan":"Jordan",
+  "Portugal":"Portugal","DR Congo":"DR Congo","Congo DR":"DR Congo","Uzbekistan":"Uzbekistan",
+  "Colombia":"Colombia","England":"England","Croatia":"Croatia","Ghana":"Ghana","Panama":"Panama"
+};
+
+function normalizeTeam(name){ return ESPN_NAME_MAP[name] || name; }
+
+function findGroup(team){
+  for(const [g,teams] of Object.entries(GROUPS)){
+    if(teams.includes(team)) return g;
+  }
+  return null;
+}
+
+let liveScoresCache = [];
+let espnPollTimer = null;
+
+async function fetchESPNScores(){
+  try {
+    const r = await fetch(ESPN_API + "?limit=100");
+    if(!r.ok) return;
+    const data = await r.json();
+    const events = data.events || [];
+    liveScoresCache = [];
+    const groupGoals = {}; // { grp: { team: goals } }
+
+    for(const ev of events){
+      const comp = ev.competitions && ev.competitions[0];
+      if(!comp) continue;
+      const comps = comp.competitors || [];
+      if(comps.length < 2) continue;
+
+      const home = comps.find(c=>c.homeAway==="home")||comps[0];
+      const away = comps.find(c=>c.homeAway==="away")||comps[1];
+      const homeName = normalizeTeam(home.team.displayName||home.team.name);
+      const awayName = normalizeTeam(away.team.displayName||away.team.name);
+      const homeScore = parseInt(home.score)||0;
+      const awayScore = parseInt(away.score)||0;
+      const status = ev.status?.type?.name || "";
+      const statusDesc = ev.status?.type?.description || "";
+      const isFinal = status === "STATUS_FINAL";
+      const isLive  = status === "STATUS_IN_PROGRESS";
+      const clock   = ev.status?.displayClock || "";
+
+      liveScoresCache.push({ homeName, awayName, homeScore, awayScore, isFinal, isLive, clock, statusDesc, date: ev.date });
+
+      // Only update standings for final group stage matches
+      if(isFinal){
+        const grp = findGroup(homeName) || findGroup(awayName);
+        if(!grp) continue;
+        if(!groupGoals[grp]) groupGoals[grp] = {};
+        groupGoals[grp][homeName] = (groupGoals[grp][homeName]||0) + homeScore;
+        groupGoals[grp][awayName] = (groupGoals[grp][awayName]||0) + awayScore;
+      }
+    }
+
+    // Compute standings from goals data + win/draw/loss
+    // Build full table: W/D/L/GD per team per group
+    const groupStats = {};
+    for(const ev of events){
+      const comp = ev.competitions && ev.competitions[0];
+      if(!comp) continue;
+      const comps = comp.competitors||[];
+      if(comps.length<2) continue;
+      const home = comps.find(c=>c.homeAway==="home")||comps[0];
+      const away = comps.find(c=>c.homeAway==="away")||comps[1];
+      const homeName = normalizeTeam(home.team.displayName||home.team.name);
+      const awayName = normalizeTeam(away.team.displayName||away.team.name);
+      const homeScore = parseInt(home.score)||0;
+      const awayScore = parseInt(away.score)||0;
+      const isFinal = ev.status?.type?.name === "STATUS_FINAL";
+      if(!isFinal) continue;
+      const grp = findGroup(homeName)||findGroup(awayName);
+      if(!grp) continue;
+      if(!groupStats[grp]) groupStats[grp]={};
+      [homeName,awayName].forEach(t=>{ if(!groupStats[grp][t]) groupStats[grp][t]={pts:0,gf:0,ga:0,played:0}; });
+      groupStats[grp][homeName].gf += homeScore; groupStats[grp][homeName].ga += awayScore; groupStats[grp][homeName].played++;
+      groupStats[grp][awayName].gf += awayScore; groupStats[grp][awayName].ga += homeScore; groupStats[grp][awayName].played++;
+      if(homeScore>awayScore){ groupStats[grp][homeName].pts+=3; }
+      else if(homeScore<awayScore){ groupStats[grp][awayName].pts+=3; }
+      else { groupStats[grp][homeName].pts+=1; groupStats[grp][awayName].pts+=1; }
+    }
+
+    // Update adminResults for completed groups
+    let changed = false;
+    let allGroupsDone = true;
+    for(const [grp, teams] of Object.entries(GROUPS)){
+      const stats = groupStats[grp];
+      if(!stats) { allGroupsDone=false; continue; }
+      // Check all 3 matches played (each team plays 3)
+      const allPlayed = teams.every(t => stats[t] && stats[t].played===3);
+      if(!allPlayed){ allGroupsDone=false; continue; }
+      // Sort by pts, then gd, then gf
+      const sorted = [...teams].sort((a,b)=>{
+        const sa=stats[a]||{pts:0,gf:0,ga:0}, sb=stats[b]||{pts:0,gf:0,ga:0};
+        if(sb.pts!==sa.pts) return sb.pts-sa.pts;
+        const gdA=sa.gf-sa.ga, gdB=sb.gf-sb.ga;
+        if(gdB!==gdA) return gdB-gdA;
+        return sb.gf-sa.gf;
+      });
+      const newResult = {};
+      sorted.forEach((t,i)=>newResult[t]=i+1);
+      // Only update if different from current
+      const cur = JSON.stringify(S.adminResults[grp]||{});
+      if(cur !== JSON.stringify(newResult)){
+        S.adminResults[grp] = newResult;
+        changed = true;
+      }
+    }
+
+    if(changed){
+      syncDebounced();
+    }
+
+    // Auto-open bracket if all groups done
+    if(allGroupsDone && !S.adminBracketOpen){
+      S.adminBracketOpen = true;
+      changed = true;
+      syncDebounced();
+    }
+
+    updateLiveUI();
+  } catch(e){ console.warn("ESPN fetch failed:", e); }
+}
+
+function updateLiveUI(){
+  const now = new Date();
+  const hasLive = liveScoresCache.some(m=>m.isLive);
+  const hasToday = liveScoresCache.some(m=>{
+    const d = new Date(m.date);
+    return d.toDateString()===now.toDateString();
+  });
+
+  // Badge
+  const badge = document.getElementById("liveScoresBadge");
+  if(badge) badge.style.display = hasLive ? "inline-flex" : "none";
+
+  // Scores section
+  const sec = document.getElementById("scoresSection");
+  const grid = document.getElementById("scoresGrid");
+  if(sec && grid){
+    const todayMatches = liveScoresCache.filter(m=>{
+      const d=new Date(m.date);
+      return d.toDateString()===now.toDateString() || m.isLive || m.isFinal;
+    }).slice(0,16);
+    if(todayMatches.length){
+      sec.style.display="block";
+      grid.innerHTML = todayMatches.map(m=>{
+        const cls = m.isLive?"live":m.isFinal?"final":"sched";
+        const lbl = m.isLive?(m.clock||"Live"):m.isFinal?"Final":new Date(m.date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        const hw = m.isFinal&&m.homeScore>m.awayScore, aw = m.isFinal&&m.awayScore>m.homeScore;
+        return `<div class="score-card ${cls}">
+          <div class="score-status ${cls}">${m.isLive?'<span class="live-dot"></span>':''}${lbl}</div>
+          <div class="score-teams">
+            <div class="score-team ${hw?'winner':''}">
+              <span class="team-flag">${flag(m.homeName)}</span>
+              <span class="score-team-name">${m.homeName}</span>
+              ${m.isFinal||m.isLive?`<span class="score-team-goals">${m.homeScore}</span>`:''}
+            </div>
+            <div class="score-team ${aw?'winner':''}">
+              <span class="team-flag">${flag(m.awayName)}</span>
+              <span class="score-team-name">${m.awayName}</span>
+              ${m.isFinal||m.isLive?`<span class="score-team-goals">${m.awayScore}</span>`:''}
+            </div>
+          </div>
+        </div>`;
+      }).join("");
+    } else {
+      sec.style.display="none";
+    }
+  }
+}
+
+function startESPNPolling(){
+  fetchESPNScores();
+  espnPollTimer = setInterval(fetchESPNScores, 60000);
+}
+
+// ── TRASH TALK WALL ───────────────────────────────────────────────────────────
+function renderWall(){
+  const posts = (S.wall||[]).slice().reverse();
+  const el = document.getElementById("wallPosts");
+  const form = document.getElementById("wallForm");
+  const noEntry = document.getElementById("wallNoEntry");
+  const postingAs = document.getElementById("wallPostingAs");
+  if(!el) return;
+
+  const hasEntry = S.currentEntry && S.entries[S.currentEntry];
+  if(form) form.style.display = hasEntry ? "block" : "none";
+  if(noEntry) noEntry.style.display = hasEntry ? "none" : "block";
+  if(postingAs && hasEntry) postingAs.textContent = S.currentEntry;
+
+  if(!posts.length){
+    el.innerHTML = '<p class="wall-empty">No trash talk yet. Be the first.</p>';
+    return;
+  }
+  el.innerHTML = posts.map(p=>{
+    const initials = p.entry.substring(0,2).toUpperCase();
+    const time = new Date(p.ts).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div class="wall-post">
+      <div class="wall-avatar">${initials}</div>
+      <div class="wall-bubble">
+        <div class="wall-meta"><strong>${p.entry}</strong> &middot; ${time}</div>
+        <div class="wall-text">${p.text.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function postWall(){
+  if(!S.currentEntry){ return; }
+  const inp = document.getElementById("wallInput");
+  const text = inp.value.trim();
+  if(!text) return;
+  if(text.length>280){ showMsg("wallSaveMsg","Max 280 characters.","err"); return; }
+  if(!S.wall) S.wall=[];
+  S.wall.push({ entry: S.currentEntry, text, ts: Date.now() });
+  // Keep last 200 posts
+  if(S.wall.length>200) S.wall = S.wall.slice(-200);
+  inp.value="";
+  syncDebounced();
+  renderWall();
 }
 
 // ── DEADLINES ─────────────────────────────────────────────────────────────────
@@ -986,9 +1263,12 @@ function saveBracketPicks(){
 
 // ── LEADERBOARD ───────────────────────────────────
 function renderLeaderboard(){
+  updateLiveUI();
+  renderWall();
   const keys=Object.keys(S.entries);
   if(!keys.length){ document.getElementById("lbContent").innerHTML=`<p style="color:var(--text2);font-size:14px">No entries yet.</p>`; return; }
   const actual=S.adminGoals;
+  const showGoals = groupsLocked(); // hide goals guess until entries are locked
   const scores=keys.map(k=>{
     const e=S.entries[k];
     let gp=0;
@@ -1009,8 +1289,9 @@ function renderLeaderboard(){
   let html=`<table class="lb"><thead><tr>
     <th>#</th><th>Entry</th><th>Entrant</th>
     <th class="right">Group pts</th><th class="right">Bracket pts</th>
-    <th class="pts">Total</th><th class="right">Goals guess</th>
-    ${actual!=null?`<th class="right">Diff</th>`:""}
+    <th class="pts">Total</th>
+    ${showGoals?`<th class="right">Goals guess</th>`:""}
+    ${showGoals&&actual!=null?`<th class="right">Diff</th>`:""}
   </tr></thead><tbody>`;
   scores.forEach((s,i)=>{
     const mc=medals[i]||"";
@@ -1020,12 +1301,13 @@ function renderLeaderboard(){
       <td style="color:var(--text2)">${s.name}</td>
       <td class="right">${s.gp}</td><td class="right">${s.bp}</td>
       <td class="pts">${s.total}</td>
-      <td class="right" style="color:var(--text2)">${s.guess}</td>
-      ${actual!=null?`<td class="right" style="color:${s.diff===0?"#3fb950":"var(--text2)"}">${s.diff}</td>`:""}
+      ${showGoals?`<td class="right" style="color:var(--text2)">${s.guess||"—"}</td>`:""}
+      ${showGoals&&actual!=null?`<td class="right" style="color:${s.diff===0?"#3fb950":"var(--text2)"}">${s.diff}</td>`:""}
     </tr>`;
   });
   html+=`</tbody></table>`;
-  if(actual!=null) html+=`<p style="font-size:12px;color:var(--text2);margin-top:.6rem">Actual total goals: <strong style="color:var(--gold)">${actual}</strong> — tiebreaker active</p>`;
+  if(showGoals&&actual!=null) html+=`<p style="font-size:12px;color:var(--text2);margin-top:.6rem">Actual total goals: <strong style="color:var(--gold)">${actual}</strong> — tiebreaker active</p>`;
+  if(!showGoals) html+=`<p style="font-size:12px;color:var(--text3);margin-top:.6rem">⏳ Goals tiebreaker hidden until entries lock on June 11.</p>`;
   document.getElementById("lbContent").innerHTML=html;
 }
 
@@ -1160,7 +1442,7 @@ function showMsg(id,txt,type){
 
 // ── BOOT ──────────────────────────────────────────
 loadLocal();
-loadRemote().then(()=>{ renderEntryPills(); updateEntryBars(); });
+loadRemote().then(()=>{ renderEntryPills(); updateEntryBars(); startESPNPolling(); });
 </script>
 
 <footer class="site-footer">1 World, 1 Cup &nbsp;&bull;&nbsp; 2026 FIFA World Cup Pick'em &nbsp;&bull;&nbsp; Built for the beautiful game</footer>
