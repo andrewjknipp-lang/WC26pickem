@@ -324,7 +324,7 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
       </div>
       <div class="form-group">
         <label class="form-label">Entry name</label>
-        <input type="text" id="regEntry" placeholder="e.g. Dark Horses FC" style="width:100%" />
+        <input type="text" id="regEntry" placeholder="e.g. Dark Horses FC" style="width:100%" onblur="checkExistingEntry()" />
         <span class="form-hint">Give your picks a fun name</span>
       </div>
     </div>
@@ -337,7 +337,7 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
       <div class="form-group">
         <label class="form-label">Tiebreaker — total tournament goals</label>
         <input type="number" id="regGoals" placeholder="e.g. 185" min="0" max="600" step="1" style="width:100%" />
-        <span class="form-hint">Closest to actual total wins tiebreaker. 104 matches in 2026.</span>
+        <span class="form-hint" id="goalsHint">Closest to actual total wins tiebreaker. 104 matches in 2026.</span>
       </div>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -676,6 +676,25 @@ function updateEntryBars(){
 }
 
 // ── REGISTER ──────────────────────────────────────
+
+function checkExistingEntry(){
+  const entryName = document.getElementById("regEntry").value.trim();
+  const goalsInput = document.getElementById("regGoals");
+  const goalsHint = document.getElementById("goalsHint");
+  if(entryName && S.entries[entryName]){
+    goalsInput.value = S.entries[entryName].goals;
+    goalsInput.disabled = true;
+    goalsInput.style.opacity = ".5";
+    goalsHint.innerHTML = "&#x1F512; Goals guess is locked — set when entry was created.";
+    goalsHint.style.color = "var(--text3)";
+  } else {
+    goalsInput.disabled = false;
+    goalsInput.style.opacity = "1";
+    goalsHint.innerHTML = "Closest to actual total wins tiebreaker. 104 matches in 2026.";
+    goalsHint.style.color = "";
+  }
+}
+
 function registerEntry(){
   const name=document.getElementById("regName").value.trim();
   const entry=document.getElementById("regEntry").value.trim();
@@ -692,7 +711,12 @@ function registerEntry(){
     if(!checkPin(entry, pin)){ err.textContent="That entry name is taken — wrong PIN."; return; }
   }
   const pinHash = hashPin(pin);
-  S.entries[entry]={ name, entryName:entry, goals, pinHash, joined: new Date().toLocaleDateString(), groupPicks:{}, bracketPicks:{} };
+  const isNew = !S.entries[entry];
+  const existingGoals = !isNew ? S.entries[entry].goals : goals;
+  const existingJoined = !isNew ? S.entries[entry].joined : new Date().toLocaleDateString();
+  const existingGroupPicks = !isNew ? S.entries[entry].groupPicks : {};
+  const existingBracketPicks = !isNew ? S.entries[entry].bracketPicks : {};
+  S.entries[entry]={ name, entryName:entry, goals:existingGoals, pinHash, joined:existingJoined, groupPicks:existingGroupPicks, bracketPicks:existingBracketPicks };
   S.currentEntry=entry;
   syncDebounced();
   document.getElementById("regStatus").textContent="Entry created — go make your picks!";
