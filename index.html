@@ -167,20 +167,6 @@ a{color:var(--gold);text-decoration:none}.a:hover{text-decoration:underline}
   .matches-grid{grid-template-columns:1fr 1fr}
 }
 
-/* ── HERO BANNER ── */
-.hero{position:relative;overflow:hidden;background:var(--pitch-dark);border-bottom:1px solid rgba(245,200,66,.15);padding:2rem 1rem 1.75rem;text-align:center;margin-bottom:2rem}
-.hero::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.03) 39px,rgba(255,255,255,.03) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.03) 39px,rgba(255,255,255,.03) 40px);pointer-events:none}
-.hero::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse at center,rgba(27,107,60,.5) 0%,transparent 70%);pointer-events:none}
-.hero-eyebrow{font-family:'Teko',sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(245,200,66,.6);margin-bottom:.4rem;position:relative}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,7.5vw,88px);line-height:.95;letter-spacing:.02em;color:#fff;position:relative;margin-bottom:.6rem}
-.hero-title span{color:var(--gold);display:block}
-.hero-sub{font-family:'Teko',sans-serif;font-size:17px;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);position:relative}
-.hero-divider{width:60px;height:3px;background:var(--gold);margin:.9rem auto;position:relative}
-.hero-meta{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-top:1.25rem;position:relative}
-.hero-chip{display:flex;flex-direction:column;align-items:center;gap:2px}
-.hero-chip-val{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);line-height:1}
-.hero-chip-lbl{font-size:11px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase}
-
 /* ── ENHANCED HEADER ── */
 .logo-main{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);letter-spacing:.06em;line-height:1}
 .logo-sub{font-family:'Teko',sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);line-height:1}
@@ -333,25 +319,6 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 
 <main class="main">
 
-<div class="hero">
-  <p class="hero-eyebrow">USA · Canada · Mexico &nbsp;·&nbsp; June 11 – July 19, 2026</p>
-  <h1 class="hero-title">1 World<span>1 Cup.</span></h1>
-  <div class="hero-divider"></div>
-  <p class="hero-sub">The greatest tournament on earth &mdash; pick your path to glory</p>
-  <div class="hero-meta">
-    <div class="hero-chip"><span class="hero-chip-val">48</span><span class="hero-chip-lbl">Nations</span></div>
-    <div class="hero-chip"><span class="hero-chip-val">12</span><span class="hero-chip-lbl">Groups</span></div>
-    <div class="hero-chip"><span class="hero-chip-val">104</span><span class="hero-chip-lbl">Matches</span></div>
-    <div class="hero-chip"><span class="hero-chip-val">39</span><span class="hero-chip-lbl">Days</span></div>
-    <div class="hero-chip"><span class="hero-chip-val">1</span><span class="hero-chip-lbl">Champion</span></div>
-  </div>
-</div>
-<div class="countdown-bar" id="countdownBar">
-  <div class="cd-unit"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">Days</div></div>
-  <div class="cd-unit"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">Hrs</div></div>
-  <div class="cd-unit"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">Min</div></div>
-  <div class="cd-unit"><div class="cd-num" id="cd-s">--</div><div class="cd-lbl">Sec</div></div>
-</div>
 
 <!-- REGISTER -->
 <div id="register" class="section active">
