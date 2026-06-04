@@ -517,9 +517,8 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 
 <script>
 // ─────────────────────────────────────────────────
-// CONFIG — paste your jsonbin.io Master Key here
-const JSONBIN_KEY = "$2a$10$cS1dcvbb9wIO193eEXn7CujuxEELPOvW2OI/bhFLORteiGwZsBo9e";
-const BIN_ID_KEY  = "wc26_bin_id";
+// CONFIG — npoint.io storage
+const NPOINT_URL = "https://api.npoint.io/d155773172c4332266e3";
 // ─────────────────────────────────────────────────
 
 
@@ -903,7 +902,7 @@ async function jbFetch(url, opts){
 }
 
 async function loadRemote(){
-  if(!JSONBIN_KEY){ document.getElementById("setupNotice").style.display="block"; return; }
+  
   const binId = localStorage.getItem(BIN_ID_KEY);
   setSyncBar("● syncing…","syncing");
   try {
@@ -921,9 +920,7 @@ async function loadRemote(){
 }
 
 async function pushRemote(){
-  if(!JSONBIN_KEY) return;
-  const binId = localStorage.getItem(BIN_ID_KEY);
-  if(!binId) return;
+  
   setSyncBar("● saving…","syncing");
   try {
     await jbFetch(`https://api.jsonbin.io/v3/b/${binId}`, {method:"PUT", body: JSON.stringify(S)});
