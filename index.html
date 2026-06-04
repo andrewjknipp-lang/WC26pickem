@@ -960,10 +960,11 @@ async function loadRemote(){
 async function pushRemote(){
   setSyncBar("● saving…","syncing");
   try {
+    const toSave = {...S, adminUnlocked: false}; // never persist unlocked state
     const r = await fetch(NPOINT_URL, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body: JSON.stringify(S)
+      body: JSON.stringify(toSave)
     });
     if(!r.ok) throw new Error(r.status);
     setSyncBar("● live");
@@ -1511,9 +1512,13 @@ function showMsg(id,txt,type){
 
 // ── BOOT ──────────────────────────────────────────
 loadLocal();
-S.currentEntry = null;    // always start fresh — user must load their entry
-S.adminUnlocked = false;  // always lock admin on page load
-loadRemote().then(()=>{ renderEntryPills(); updateEntryBars(); startESPNPolling(); });
+S.currentEntry = null; // always start fresh — user must load their entry
+loadRemote().then(()=>{ 
+  S.adminUnlocked = false; // lock admin after remote state loads
+  renderEntryPills(); 
+  updateEntryBars(); 
+  startESPNPolling(); 
+});
 </script>
 
 <footer class="site-footer">1 World, 1 Cup &nbsp;&bull;&nbsp; 2026 FIFA World Cup Pick'em &nbsp;&bull;&nbsp; Built for the beautiful game</footer>
