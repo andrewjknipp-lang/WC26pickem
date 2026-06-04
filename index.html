@@ -894,13 +894,6 @@ function saveLocal(){ try{ localStorage.setItem("wc26_state", JSON.stringify(S))
 // ── JSONBIN SYNC ───────────────────────────────────
 function setSyncBar(txt, cls){ const b=document.getElementById("syncBar"); b.textContent=txt; b.className="sync-bar"+(cls?" "+cls:""); }
 
-async function jbFetch(url, opts){
-  const headers = {"Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY, "X-Bin-Versioning":"false"};
-  const r = await fetch(url, {...opts, headers:{...headers,...(opts.headers||{})}});
-  if(!r.ok){ const t=await r.text().catch(()=>""); console.warn("jsonbin",r.status,t); throw new Error(r.status); }
-  return r.json();
-}
-
 async function loadRemote(){
   
   const binId = localStorage.getItem(BIN_ID_KEY);
