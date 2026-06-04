@@ -186,7 +186,7 @@ a{color:var(--gold);text-decoration:none}.a:hover{text-decoration:underline}
 .sync-bar.syncing .dot{animation:pulse .8s ease-in-out infinite}
 
 /* ── KICK OFF COUNTDOWN ── */
-.countdown-bar{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;padding:.6rem 1rem;background:rgba(0,0,0,.3);border-top:1px solid rgba(245,200,66,.1)}
+.countdown-bar{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;padding:.75rem 1rem 0;margin-top:1rem;border-top:1px solid rgba(245,200,66,.15);position:relative}
 .cd-unit{text-align:center}
 .cd-num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);line-height:1}
 .cd-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
@@ -276,7 +276,7 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
   .hero-chip-val{font-size:16px}
   .hero-chip-lbl{font-size:9px}
   .hero-divider{margin:.6rem auto}
-  .countdown-bar{gap:.5rem;padding:.5rem}
+  
   .cd-num{font-size:20px}
   .main{padding:1rem .75rem}
   .groups-grid{grid-template-columns:1fr 1fr}
@@ -362,9 +362,13 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
     <div class="hero-chip"><span class="hero-chip-val">39</span><span class="hero-chip-lbl">Days</span></div>
     <div class="hero-chip"><span class="hero-chip-val">1</span><span class="hero-chip-lbl">Champion</span></div>
   </div>
+  <div class="countdown-bar" id="countdownBar">
+    <div class="cd-unit"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">Days</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">Hrs</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">Min</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-s">--</div><div class="cd-lbl">Sec</div></div>
+  </div>
 </div>
-<div class="countdown-bar" id="countdownBar">
-  <div class="cd-unit"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">Days</div></div>
 
 <!-- REGISTER -->
 <div id="register" class="section active">
