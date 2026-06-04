@@ -168,17 +168,17 @@ a{color:var(--gold);text-decoration:none}.a:hover{text-decoration:underline}
 }
 
 /* ── HERO BANNER ── */
-.hero{position:relative;overflow:hidden;background:var(--pitch-dark);border-bottom:1px solid rgba(245,200,66,.15);padding:3rem 1.5rem 2.5rem;text-align:center;margin-bottom:2rem}
+.hero{position:relative;overflow:hidden;background:var(--pitch-dark);border-bottom:1px solid rgba(245,200,66,.15);padding:2rem 1rem 1.75rem;text-align:center;margin-bottom:2rem}
 .hero::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.03) 39px,rgba(255,255,255,.03) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.03) 39px,rgba(255,255,255,.03) 40px);pointer-events:none}
 .hero::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse at center,rgba(27,107,60,.5) 0%,transparent 70%);pointer-events:none}
-.hero-eyebrow{font-family:'Teko',sans-serif;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:rgba(245,200,66,.6);margin-bottom:.4rem;position:relative}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,9vw,88px);line-height:.95;letter-spacing:.02em;color:#fff;position:relative;margin-bottom:.6rem}
+.hero-eyebrow{font-family:'Teko',sans-serif;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(245,200,66,.6);margin-bottom:.4rem;position:relative}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,7vw,88px);line-height:.95;letter-spacing:.02em;color:#fff;position:relative;margin-bottom:.6rem}
 .hero-title span{color:var(--gold);display:block}
 .hero-sub{font-family:'Teko',sans-serif;font-size:17px;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);position:relative}
 .hero-divider{width:60px;height:3px;background:var(--gold);margin:.9rem auto;position:relative}
 .hero-meta{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-top:1.25rem;position:relative}
 .hero-chip{display:flex;flex-direction:column;align-items:center;gap:2px}
-.hero-chip-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);line-height:1}
+.hero-chip-val{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);line-height:1}
 .hero-chip-lbl{font-size:11px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase}
 
 /* ── ENHANCED HEADER ── */
@@ -279,6 +279,25 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 .score-team-goals{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);min-width:20px;text-align:right}
 .score-team.winner .score-team-name{color:#fff;font-weight:600}
 .auto-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);padding:3px 8px;background:var(--surface2);border-radius:20px;border:0.5px solid var(--border)}
+
+
+@media(max-width:480px){
+  .hero{padding:1.5rem .75rem 1.25rem}
+  .hero-title{font-size:clamp(28px,11vw,52px) !important}
+  .hero-eyebrow{font-size:10px;letter-spacing:.1em}
+  .hero-sub{font-size:14px}
+  .hero-meta{gap:.75rem}
+  .hero-chip-val{font-size:16px}
+  .hero-chip-lbl{font-size:9px}
+  .hero-divider{margin:.6rem auto}
+  .countdown-bar{gap:.5rem;padding:.5rem}
+  .cd-num{font-size:20px}
+  .main{padding:1rem .75rem}
+  .groups-grid{grid-template-columns:1fr 1fr}
+  .matches-grid{grid-template-columns:1fr 1fr}
+  .header-tabs .htab{padding:5px 7px;font-size:11px}
+  .site-header{padding:0 .75rem}
+}
 
 </style>
 </head>
@@ -1438,6 +1457,7 @@ function showMsg(id,txt,type){
 
 // ── BOOT ──────────────────────────────────────────
 loadLocal();
+S.currentEntry = null; // always start fresh — user must load their entry
 loadRemote().then(()=>{ renderEntryPills(); updateEntryBars(); startESPNPolling(); });
 </script>
 
