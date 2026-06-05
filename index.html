@@ -1493,6 +1493,12 @@ function saveAdminResults(){
 }
 
 function resetAdminResults(){ if(!confirm("Reset all group results?")) return; S.adminResults={}; syncDebounced(); renderAdminContent(); }
+function deleteEntry(k){
+  if(!confirm(\`Delete entry "\${k}"? Cannot be undone.\`)) return;
+  delete S.entries[k];
+  if(S.currentEntry===k) S.currentEntry=null;
+  syncDebounced(); renderAdminContent(); renderEntryPills(); updateEntryBars();
+}
 function clearAll(){ if(!confirm("Delete ALL entries? Cannot be undone.")) return; S.entries={}; S.currentEntry=null; syncDebounced(); renderAdminContent(); renderEntryPills(); updateEntryBars(); }
 
 // ── HELPERS ───────────────────────────────────────
