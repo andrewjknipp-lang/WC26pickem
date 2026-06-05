@@ -1038,7 +1038,9 @@ function switchEntry(){
   if(!S.entries[val]){ err.textContent="Entry not found."; return; }
   if(!checkPin(val, pin)){ err.textContent="Incorrect PIN."; return; }
   err.textContent="";
-  S.currentEntry=val; saveLocal();
+  S.currentEntry=val;
+  scrubOtherEntryPicks(); // clear other entries' picks from memory
+  saveLocal();
   renderEntryPills(); updateEntryBars();
   showTab("groups");
 }
@@ -1056,7 +1058,9 @@ function quickSwitch(k){
   const pin=prompt(`Enter PIN for entry "${k}":`);
   if(pin===null) return;
   if(!checkPin(k, pin)){ alert("Incorrect PIN."); return; }
-  S.currentEntry=k; saveLocal(); renderEntryPills(); updateEntryBars();
+  S.currentEntry=k;
+  scrubOtherEntryPicks(); // clear other entries' picks from memory
+  saveLocal(); renderEntryPills(); updateEntryBars();
 }
 
 // ── GROUP PICKS ────────────────────────────────────
