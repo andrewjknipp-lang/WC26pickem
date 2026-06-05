@@ -950,12 +950,22 @@ async function loadRemote(){
     if(d && typeof d === "object" && Object.keys(d).length > 0){
       Object.assign(S, d);
     }
+    scrubOtherEntryPicks();
     saveLocal();
     setSyncBar("● live");
   } catch(e){
     console.warn("npoint load failed:", e);
     setSyncBar("● offline","error");
   }
+}
+
+function scrubOtherEntryPicks(){
+  Object.keys(S.entries||{}).forEach(k => {
+    if(k !== S.currentEntry){
+      S.entries[k].groupPicks = {};
+      S.entries[k].bracketPicks = {};
+    }
+  });
 }
 async function pushRemote(){
   setSyncBar("● saving…","syncing");
