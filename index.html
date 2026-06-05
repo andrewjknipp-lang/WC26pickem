@@ -950,7 +950,8 @@ async function loadRemote(){
     if(d && typeof d === "object" && Object.keys(d).length > 0){
       Object.assign(S, d);
     }
-    scrubOtherEntryPicks();
+    S.currentEntry = null; // never restore session from remote
+    scrubOtherEntryPicks(); // wipe all picks — user must PIN to see their own
     saveLocal();
     setSyncBar("● live");
   } catch(e){
@@ -970,7 +971,7 @@ function scrubOtherEntryPicks(){
 async function pushRemote(){
   setSyncBar("● saving…","syncing");
   try {
-    const toSave = {...S, adminUnlocked: false}; // never persist unlocked state
+    const toSave = {...S, adminUnlocked: false, currentEntry: null}; // never persist session state
     const r = await fetch(NPOINT_URL, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
