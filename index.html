@@ -1473,6 +1473,7 @@ function renderAdminContent(){
       <span style="color:var(--text2);font-size:12px">🎯 ${e.goals}</span>
       <span class="badge ${gc===12?"badge-ok":"badge-warn"}" style="margin-left:6px">${gc}/12</span>
       <span class="badge ${bc>=16?"badge-ok":"badge-warn"}" style="margin-left:4px">${bc} picks</span>
+      <button class="btn btn-danger" onclick="deleteEntry('${k}')" style="padding:3px 10px;font-size:11px;margin-left:8px">✕ Delete</button>
     </div>`;
   }).join("");
 }
