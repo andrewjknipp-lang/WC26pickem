@@ -959,12 +959,6 @@ async function loadRemote(){
   }
 }
 
-function scrubOtherEntryPicks(){
-  Object.keys(S.entries||{}).forEach(k => {
-    if(k !== S.currentEntry){
-      S.entries[k].groupPicks = {};
-      S.entries[k].bracketPicks = {};
-    }
   });
 }
 async function pushRemote(){
