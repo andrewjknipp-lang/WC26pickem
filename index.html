@@ -1168,21 +1168,16 @@ function renderGoalsCard(){
   const card = document.getElementById("goalsCard");
   if(!card) return;
   const inp = document.getElementById("goalsInput");
-  const btn = document.getElementById("goalsSaveBtn");
   const hint = document.getElementById("goalsCardHint");
-  if(!entry){
-    card.style.display="none"; return;
-  }
+  if(!entry){ card.style.display="none"; return; }
   card.style.display="block";
   if(entry.goals) inp.value = entry.goals;
   if(locked){
     inp.disabled=true; inp.style.opacity=".5";
-    btn.disabled=true; btn.style.opacity=".4";
-    hint.innerHTML="&#x1F512; Tiebreaker locked at kick-off.";
+    if(hint) hint.innerHTML="&#x1F512; Tiebreaker locked at kick-off.";
   } else {
     inp.disabled=false; inp.style.opacity="1";
-    btn.disabled=false; btn.style.opacity="1";
-    hint.innerHTML="Editable until first kick-off (June 11). 104 matches in 2026.";
+    if(hint) hint.innerHTML="Editable until first kick-off (June 11). Saved with your picks.";
   }
 }
 
