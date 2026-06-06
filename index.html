@@ -971,7 +971,10 @@ function scrubOtherEntryPicks(){
 async function pushRemote(){
   setSyncBar("● saving…","syncing");
   try {
-    const toSave = {...S, adminUnlocked: false, currentEntry: null}; // never persist session state
+    // Deep clone so scrubbing in-memory picks doesn't affect what we save
+  const toSave = JSON.parse(JSON.stringify(S));
+  toSave.adminUnlocked = false;
+  toSave.currentEntry = null;
     const r = await fetch(NPOINT_URL, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
