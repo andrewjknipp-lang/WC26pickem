@@ -458,24 +458,23 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
     <span class="pt-chip">Max 4 pts / group &middot; 48 pts total</span>
   </div>
   <div id="groupDeadlineWrap"></div>
-  <div id="goalsCard" style="max-width:460px;margin-bottom:1.25rem;background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:1rem 1.25rem">
+  <div id="goalsCard" style="max-width:460px;margin-bottom:1rem;background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:1rem 1.25rem">
     <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap">
       <div class="form-group" style="flex:1;min-width:180px">
         <label class="form-label">⚽ Tiebreaker — total tournament goals</label>
         <input type="number" id="goalsInput" placeholder="e.g. 185" min="0" max="600" step="1" style="width:130px" />
         <span class="form-hint" id="goalsCardHint">Editable until first kick-off (June 11). 104 matches in 2026.</span>
       </div>
-      <span style="font-size:12px;color:var(--text3);margin-bottom:18px;align-self:flex-end">Saved with your picks ↓</span>
     </div>
+  </div>
+  <div style="margin-bottom:1rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-gold" id="groupSaveBtnTop" onclick="saveGroupPicks()">&#x1F4BE; Save picks &amp; tiebreaker</button>
+    <span id="groupSaveMsg" class="msg-ok"></span>
   </div>
   <div class="groups-grid" id="groupsGrid"></div>
   <div style="margin-top:1.25rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
     <button class="btn btn-gold" id="groupSaveBtn" onclick="saveGroupPicks()">&#x1F4BE; Save picks &amp; tiebreaker</button>
     <span id="groupSaveMsgBottom" class="msg-ok"></span>
-  </div>
-  <div style="margin-bottom:1rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-    <button class="btn btn-gold" id="groupSaveBtnTop" onclick="saveGroupPicks()">&#x1F4BE; Save picks &amp; tiebreaker</button>
-    <span id="groupSaveMsg" class="msg-ok"></span>
   </div>
 </div>
 
