@@ -951,8 +951,7 @@ async function loadRemote(){
       Object.assign(S, d);
     }
     S.currentEntry = null; // never restore session from remote
-    scrubOtherEntryPicks(); // wipe all picks — user must PIN to see their own
-    saveLocal();
+      saveLocal();
     setSyncBar("● live");
   } catch(e){
     console.warn("npoint load failed:", e);
@@ -1053,7 +1052,6 @@ function switchEntry(){
   if(!checkPin(val, pin)){ err.textContent="Incorrect PIN."; return; }
   err.textContent="";
   S.currentEntry=val;
-  scrubOtherEntryPicks(); // clear other entries' picks from memory
   saveLocal();
   renderEntryPills(); updateEntryBars();
   showTab("groups");
@@ -1073,7 +1071,6 @@ function quickSwitch(k){
   if(pin===null) return;
   if(!checkPin(k, pin)){ alert("Incorrect PIN."); return; }
   S.currentEntry=k;
-  scrubOtherEntryPicks(); // clear other entries' picks from memory
   saveLocal(); renderEntryPills(); updateEntryBars();
 }
 
