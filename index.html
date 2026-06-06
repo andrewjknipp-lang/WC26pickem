@@ -505,9 +505,33 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 
 <!-- LEADERBOARD -->
 <div id="leaderboard" class="section">
-  <p class="page-title">⚽ Standings</p>
-  <p class="page-sub">Updated live as results come in. Tiebreaker: closest total goals guess wins.</p>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:.25rem">
+    <p class="page-title" style="margin-bottom:0">⚽ Standings</p>
+    <span class="auto-badge" id="liveScoresBadge" style="display:none"><span class="live-dot"></span> Live scores active</span>
+  </div>
+  <p class="page-sub">Scores update automatically from ESPN. Tiebreaker hidden until entries lock.</p>
+
+  <div class="scores-section" id="scoresSection" style="display:none">
+    <div class="scores-title"><span class="live-dot"></span> Today's matches</div>
+    <div class="scores-grid" id="scoresGrid"></div>
+  </div>
+
   <div class="lb-wrap"><div id="lbContent"></div></div>
+
+  <div class="wall-wrap">
+    <p class="wall-title">💬 Trash Talk</p>
+    <div id="wallPosts"></div>
+    <div id="wallInputArea">
+      <div id="wallNoEntry" class="wall-no-entry" style="display:none">Load your entry to join the trash talk.</div>
+      <div id="wallForm" style="display:none">
+        <div class="wall-input-row">
+          <textarea id="wallInput" placeholder="Talk your talk..." maxlength="280"></textarea>
+          <button class="btn btn-gold" onclick="postWall()" style="padding:8px 14px;height:60px">Post</button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Posting as <strong id="wallPostingAs" style="color:var(--text2)"></strong> &middot; 280 char max</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ADMIN -->
