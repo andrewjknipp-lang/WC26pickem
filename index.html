@@ -324,6 +324,14 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 .hero-chip-lbl{font-size:11px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase}
 
 
+
+/* ── COMPLETION INDICATORS ── */
+.completion-cell{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.comp-badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+.comp-badge.complete{background:rgba(63,185,80,.15);color:#3fb950;border:1px solid rgba(63,185,80,.3)}
+.comp-badge.partial{background:rgba(245,200,66,.1);color:#f5c842;border:1px solid rgba(245,200,66,.25)}
+.comp-badge.empty{background:rgba(139,148,158,.08);color:#8b949e;border:1px solid rgba(139,148,158,.15)}
+
 </style>
 </head>
 <body>
@@ -1382,8 +1390,10 @@ function renderLeaderboard(){
       if(!res||!pred) return;
       pred.forEach((team,i)=>{ if(res[team]===i+1) gp++; });
     });
+    const groupCount = Object.keys(e.groupPicks||{}).length;
+    const bracketCount = Object.keys(e.bracketPicks||{}).length;
     const diff=actual!=null?Math.abs(e.goals-actual):null;
-    return {name:e.name,entry:k,gp,bp:0,total:gp,guess:e.goals,diff};
+    return {name:e.name,entry:k,gp,bp:0,total:gp,guess:e.goals,diff,groupCount,bracketCount};
   }).sort((a,b)=>{
     if(b.total!==a.total) return b.total-a.total;
     if(a.diff!=null&&b.diff!=null) return a.diff-b.diff;
@@ -1393,17 +1403,29 @@ function renderLeaderboard(){
   const medals=["medal-1","medal-2","medal-3"];
   let html=`<table class="lb"><thead><tr>
     <th>#</th><th>Entry</th><th>Entrant</th>
+    <th>Picks</th>
     <th class="right">Group pts</th><th class="right">Bracket pts</th>
     <th class="pts">Total</th>
-    ${showGoals?`<th class="right">Goals guess</th>`:""}
+    ${showGoals?`<th class="right">Goals</th>`:""}
     ${showGoals&&actual!=null?`<th class="right">Diff</th>`:""}
   </tr></thead><tbody>`;
   scores.forEach((s,i)=>{
     const mc=medals[i]||"";
+    const gDone = s.groupCount===12;
+    const bDone = s.bracketCount>=31;
+    const gBadge = gDone
+      ? `<span class="comp-badge complete">✓ Groups</span>`
+      : `<span class="comp-badge ${s.groupCount>0?'partial':'empty'}">${s.groupCount}/12</span>`;
+    const bBadge = !bracketOpen()
+      ? ``
+      : bDone
+        ? `<span class="comp-badge complete">✓ Bracket</span>`
+        : `<span class="comp-badge ${s.bracketCount>0?'partial':'empty'}">${s.bracketCount}/31</span>`;
     html+=`<tr>
       <td class="rank">${i+1}</td>
       <td style="font-weight:600" class="${mc}">${s.entry}</td>
       <td style="color:var(--text2)">${s.name}</td>
+      <td><div class="completion-cell">${gBadge}${bBadge}</div></td>
       <td class="right">${s.gp}</td><td class="right">${s.bp}</td>
       <td class="pts">${s.total}</td>
       ${showGoals?`<td class="right" style="color:var(--text2)">${s.guess||"—"}</td>`:""}
