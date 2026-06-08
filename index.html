@@ -1602,12 +1602,14 @@ function toggleBracketOpen(){
 function toggleAdminLock(which){
   if(which==="groups"){
     S.adminGroupLock = !S.adminGroupLock;
-    syncDebounced();
+  
+  loadRemote().then(()=>{ syncDebounced(); });
     renderAdminContent();
     renderGroups();
   } else {
     S.adminBracketLock = !S.adminBracketLock;
-    syncDebounced();
+  
+  loadRemote().then(()=>{ syncDebounced(); });
     renderAdminContent();
     renderBracket();
   }
