@@ -332,6 +332,14 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 .comp-badge.partial{background:rgba(245,200,66,.1);color:#f5c842;border:1px solid rgba(245,200,66,.25)}
 .comp-badge.empty{background:rgba(139,148,158,.08);color:#8b949e;border:1px solid rgba(139,148,158,.15)}
 
+
+/* ── BACKUP / RESTORE ── */
+.backup-entry{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px;flex-wrap:wrap}
+.backup-entry:last-child{border-bottom:none}
+.backup-ts{color:var(--text3);font-size:11px;min-width:140px}
+.backup-counts{color:var(--text2);flex:1}
+.restore-btn{padding:3px 10px;font-size:11px}
+
 </style>
 </head>
 <body>
@@ -858,6 +866,80 @@ function postWall(){
   renderWall();
 }
 
+
+// ── LOCAL BACKUP SYSTEM ───────────────────────────────────────────────────────
+const BACKUP_KEY = "wc26_backups";
+const MAX_BACKUPS = 10;
+
+function saveBackup(){
+  try {
+    const backups = getBackups();
+    const snapshot = {
+      ts: Date.now(),
+      label: new Date().toLocaleString(),
+      entries: JSON.parse(JSON.stringify(S.entries||{}))
+    };
+    backups.unshift(snapshot);
+    if(backups.length > MAX_BACKUPS) backups.splice(MAX_BACKUPS);
+    localStorage.setItem(BACKUP_KEY, JSON.stringify(backups));
+  } catch(e){ console.warn("Backup failed:", e); }
+}
+
+function getBackups(){
+  try {
+    const raw = localStorage.getItem(BACKUP_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e){ return []; }
+}
+
+function renderBackups(){
+  const el = document.getElementById("backupList");
+  if(!el) return;
+  const backups = getBackups();
+  if(!backups.length){
+    el.innerHTML = '<p style="font-size:13px;color:var(--text3)">No backups yet. Backups are saved automatically on your device after each sync.</p>';
+    return;
+  }
+  el.innerHTML = backups.map((b,i) => {
+    const counts = Object.keys(b.entries||{}).map(k => {
+      const gc = Object.keys(b.entries[k].groupPicks||{}).length;
+      return k + "(" + gc + "/12)";
+    }).join(", ");
+    return `<div class="backup-entry">
+      <span class="backup-ts">${b.label}</span>
+      <span class="backup-counts">${Object.keys(b.entries||{}).length} entries: ${counts}</span>
+      <button class="btn restore-btn" onclick="restoreBackup(${i})">⟲ Restore</button>
+    </div>`;
+  }).join("");
+}
+
+function restoreBackup(idx){
+  const backups = getBackups();
+  const snap = backups[idx];
+  if(!snap){ alert("Backup not found."); return; }
+  const entryCount = Object.keys(snap.entries||{}).length;
+  if(!confirm("Restore backup from " + snap.label + "?\n\n" + entryCount + " entries will be restored to npoint. This overwrites current data.")) return;
+
+  // Merge backup entries into S — preserve picks from backup where current is empty
+  Object.keys(snap.entries).forEach(k => {
+    if(!S.entries[k]){
+      S.entries[k] = snap.entries[k];
+    } else {
+      const curGP = Object.keys(S.entries[k].groupPicks||{}).length;
+      const curBP = Object.keys(S.entries[k].bracketPicks||{}).length;
+      const bakGP = Object.keys(snap.entries[k].groupPicks||{}).length;
+      const bakBP = Object.keys(snap.entries[k].bracketPicks||{}).length;
+      if(curGP === 0 && bakGP > 0) S.entries[k].groupPicks = snap.entries[k].groupPicks;
+      if(curBP === 0 && bakBP > 0) S.entries[k].bracketPicks = snap.entries[k].bracketPicks;
+      if(!S.entries[k].goals && snap.entries[k].goals) S.entries[k].goals = snap.entries[k].goals;
+    }
+  });
+
+  syncDebounced();
+  renderAdminContent();
+  showMsg("backupMsg", "Backup restored and synced to npoint!", "ok");
+}
+
 // ── DEADLINES ─────────────────────────────────────────────────────────────────
 const GROUP_LOCK    = new Date("2026-06-11T21:00:00Z"); // first kick-off
 const BRACKET_OPEN  = new Date("2026-06-26T23:59:00Z"); // last group match ends
@@ -1033,6 +1115,7 @@ async function pushRemote(){
     });
     if(!r.ok) throw new Error(r.status);
     setSyncBar("● live");
+    saveBackup(); // save local snapshot after every successful push
   } catch(e){
     console.warn("npoint push failed:", e);
     setSyncBar("● offline","error");
@@ -1515,6 +1598,7 @@ function renderAdminLockBtns(){
 function renderAdminContent(){
   if(S.adminGoals) document.getElementById("adminGoals").value=S.adminGoals;
   renderAdminLockBtns();
+  renderBackups();
   const ag=document.getElementById("adminGroups"); ag.innerHTML="";
   Object.entries(GROUPS).forEach(([grp,teams])=>{
     const div=document.createElement("div"); div.className="admin-group";
