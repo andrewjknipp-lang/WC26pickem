@@ -996,10 +996,36 @@ async function loadRemote(){
 async function pushRemote(){
   setSyncBar("● saving…","syncing");
   try {
-    // Deep clone so scrubbing in-memory picks doesn't affect what we save
-  const toSave = JSON.parse(JSON.stringify(S));
-  toSave.adminUnlocked = false;
-  toSave.currentEntry = null;
+    // Fetch latest remote state first so we don't overwrite other entries' picks
+    let remote = {};
+    try {
+      const rr = await fetch(NPOINT_URL, {cache:"no-store"});
+      if(rr.ok) remote = await rr.json();
+    } catch(e){ /* use empty if fetch fails */ }
+
+    // Deep clone local state
+    const toSave = JSON.parse(JSON.stringify(S));
+    toSave.adminUnlocked = false;
+    toSave.currentEntry = null;
+
+    // Merge: for every entry in remote, preserve their picks if local has none
+    const remoteEntries = remote.entries || {};
+    Object.keys(remoteEntries).forEach(k => {
+      if(!toSave.entries[k]){
+        // Entry exists remotely but not locally — keep it
+        toSave.entries[k] = remoteEntries[k];
+      } else {
+        // Entry exists in both — preserve remote picks if local picks are empty
+        const localGP = Object.keys(toSave.entries[k].groupPicks||{}).length;
+        const localBP = Object.keys(toSave.entries[k].bracketPicks||{}).length;
+        const remoteGP = Object.keys(remoteEntries[k].groupPicks||{}).length;
+        const remoteBP = Object.keys(remoteEntries[k].bracketPicks||{}).length;
+        if(localGP === 0 && remoteGP > 0) toSave.entries[k].groupPicks = remoteEntries[k].groupPicks;
+        if(localBP === 0 && remoteBP > 0) toSave.entries[k].bracketPicks = remoteEntries[k].bracketPicks;
+        if(!toSave.entries[k].goals && remoteEntries[k].goals) toSave.entries[k].goals = remoteEntries[k].goals;
+      }
+    });
+
     const r = await fetch(NPOINT_URL, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -1058,11 +1084,14 @@ function registerEntry(){
   }
   const pinHash = hashPin(pin);
   const isNew = !S.entries[entry];
-  const existingGoals = !isNew ? (S.entries[entry].goals||null) : null;
-  const existingJoined = !isNew ? S.entries[entry].joined : new Date().toLocaleDateString();
-  const existingGroupPicks = !isNew ? S.entries[entry].groupPicks : {};
-  const existingBracketPicks = !isNew ? S.entries[entry].bracketPicks : {};
-  S.entries[entry]={ name, entryName:entry, goals:existingGoals, pinHash, joined:existingJoined, groupPicks:existingGroupPicks, bracketPicks:existingBracketPicks };
+  if(isNew){
+    // Brand new entry — initialise with empty picks
+    S.entries[entry] = { name, entryName:entry, goals:null, pinHash, joined:new Date().toLocaleDateString(), groupPicks:{}, bracketPicks:{} };
+  } else {
+    // Existing entry — only update name and pinHash, NEVER touch picks or goals
+    S.entries[entry].name = name;
+    S.entries[entry].pinHash = pinHash;
+  }
   S.currentEntry=entry;
   syncDebounced();
   document.getElementById("regStatus").textContent="Entry created — go make your picks!";
