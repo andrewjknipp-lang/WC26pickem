@@ -617,6 +617,7 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 // ─────────────────────────────────────────────────
 // CONFIG — npoint.io storage
 const NPOINT_URL = "https://api.npoint.io/d155773172c4332266e3";
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbz3iokaUj3bHLyc0R3feWjlPsW0esJANRtc-1oq0pKAfKW1UlkWgA6binerS7b8HIQ3QQ/exec";
 // ─────────────────────────────────────────────────
 
 
@@ -876,6 +877,22 @@ function postWall(){
 }
 
 
+
+// ── GOOGLE SHEETS SYNC ────────────────────────────────────────────────────────
+async function syncToSheets(){
+  try {
+    await fetch(SHEETS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ entries: S.entries })
+    });
+    console.log("Sheets sync sent");
+  } catch(e){
+    console.warn("Sheets sync failed:", e);
+  }
+}
+
 // ── LOCAL BACKUP SYSTEM ───────────────────────────────────────────────────────
 const BACKUP_KEY = "wc26_backups";
 const MAX_BACKUPS = 10;
@@ -1124,7 +1141,8 @@ async function pushRemote(){
     });
     if(!r.ok) throw new Error(r.status);
     setSyncBar("● live");
-    saveBackup(); // save local snapshot after every successful push
+    saveBackup();
+    syncToSheets(); // save local snapshot after every successful push
   } catch(e){
     console.warn("npoint push failed:", e);
     setSyncBar("● offline","error");
