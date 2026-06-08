@@ -599,6 +599,15 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
         <button class="btn" onclick="lockAdmin()">&#x1F512; Lock admin</button>
       </div>
     </div>
+    <div class="admin-section" style="margin-top:1rem">
+      <p class="admin-title">&#x1F4BE; Local backups <span style="font-size:11px;color:var(--text3);font-weight:400">(stored on this device — up to 10 snapshots)</span></p>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">Saves automatically after every sync. Restore pushes a snapshot back to npoint if picks get wiped.</p>
+      <div id="backupList"></div>
+      <div style="margin-top:.75rem;display:flex;gap:10px;align-items:center">
+        <button class="btn" onclick="renderBackups()">&#x1F504; Refresh</button>
+        <span class="msg-ok" id="backupMsg"></span>
+      </div>
+    </div>
   </div>
 </div>
 
