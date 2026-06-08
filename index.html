@@ -869,10 +869,9 @@ function postWall(){
   if(text.length>280){ showMsg("wallSaveMsg","Max 280 characters.","err"); return; }
   if(!S.wall) S.wall=[];
   S.wall.push({ entry: S.currentEntry, text, ts: Date.now() });
-  // Keep last 200 posts
   if(S.wall.length>200) S.wall = S.wall.slice(-200);
   inp.value="";
-  syncDebounced();
+  loadRemote().then(()=>{ syncDebounced(); });
   renderWall();
 }
 
@@ -1115,6 +1114,11 @@ async function pushRemote(){
     const toSave = JSON.parse(JSON.stringify(S));
     toSave.adminUnlocked = false;
     toSave.currentEntry = null;
+
+    // Preserve wall — keep whichever is longer
+    const localWall = toSave.wall || [];
+    const remoteWall = (remote.wall) || [];
+    toSave.wall = localWall.length >= remoteWall.length ? localWall : remoteWall;
 
     // Merge: for every entry in remote, preserve their picks if local has none
     const remoteEntries = remote.entries || {};
