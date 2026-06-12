@@ -373,12 +373,12 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-bottom:1.5rem}
 .summary-card{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:1rem}
 .summary-card-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:.75rem}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
-.bar-label{width:90px;min-width:90px;max-width:90px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:12px}
+.bar-label{width:130px;min-width:130px;max-width:130px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-track{flex:1;height:14px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
 .bar-fill{height:100%;border-radius:3px;background:var(--gold);transition:width .4s}
 .bar-count{min-width:24px;text-align:right;color:var(--text3);font-size:11px}
-.contrarian-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:12px}
+.contrarian-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:12px}
 .contrarian-row:last-child{border-bottom:none}
 .contrarian-score{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold)}
 
@@ -1144,7 +1144,7 @@ function renderPicks(){
 
   contrarian.forEach(e => {
     html += `<div class="contrarian-row">
-      <span style="color:var(--text);width:110px;min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-block">${e.name}</span>
+      <span style="color:var(--text);width:130px;min-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-block">${e.name}</span>
       <span style="color:var(--text3);font-size:11px;flex:1;text-align:center;white-space:nowrap">${e.total-e.matches}/${e.total} unique</span>
       <span class="contrarian-score">${e.score}%</span>
     </div>`;
