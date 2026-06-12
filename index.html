@@ -1876,6 +1876,7 @@ function renderAdminContent(){
       <span style="color:var(--text2);font-size:12px">🎯 ${e.goals}</span>
       <span class="badge ${gc===12?"badge-ok":"badge-warn"}" style="margin-left:6px">${gc}/12</span>
       <span class="badge ${bc>=16?"badge-ok":"badge-warn"}" style="margin-left:4px">${bc} picks</span>
+      <button class="btn btn-warning" onclick="openEditEntry('${k}')" style="padding:3px 10px;font-size:11px;margin-left:8px;background:#e6a817;color:#fff;border:none;border-radius:4px;cursor:pointer">✎ Edit Picks</button>
       <button class="btn btn-danger" onclick="deleteEntry('${k}')" style="padding:3px 10px;font-size:11px;margin-left:8px">✕ Delete</button>
     </div>`;
   }).join("");
@@ -1950,5 +1951,133 @@ loadRemote().then(()=>{
 </script>
 
 <footer class="site-footer">1 World, 1 Cup &nbsp;&bull;&nbsp; 2026 FIFA World Cup Pick'em &nbsp;&bull;&nbsp; Built for the beautiful game</footer>
+<!-- Admin Edit Entry Modal -->
+<div id="editEntryModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;overflow-y:auto;">
+  <div style="background:var(--card,#1e1e2e);margin:20px auto;max-width:560px;border-radius:12px;padding:24px;box-shadow:0 4px 32px rgba(0,0,0,0.5);">
+    <h2 style="margin:0 0 4px;font-size:1.1rem;color:var(--gold,#e6a817)">✎ Edit Entry Picks</h2>
+    <p id="editEntryLabel" style="margin:0 0 16px;font-size:13px;color:var(--text2,#aaa)"></p>
+    <div id="editGroupsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;"></div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:13px;color:var(--text2,#aaa)">Total Goals Tiebreaker</label><br>
+      <input id="editGoalsInput" type="number" min="0" style="width:80px;margin-top:4px;padding:6px;border-radius:6px;border:1px solid #444;background:#111;color:#fff;font-size:14px;">
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button onclick="saveEditEntry()" style="background:var(--gold,#e6a817);color:#000;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">💾 Save Changes</button>
+      <button onclick="closeEditEntry()" style="background:#444;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;">Cancel</button>
+    </div>
+    <p id="editSaveMsg" style="margin-top:10px;font-size:13px;"></p>
+  </div>
+</div>
+
+<script>
+let _editEntryKey = null;
+
+function openEditEntry(k) {
+  _editEntryKey = k;
+  const e = S.entries[k];
+  if (!e) { alert("Entry not found in local state. Try refreshing."); return; }
+
+  document.getElementById("editEntryLabel").textContent =
+    "Entry: " + k + " | Name: " + (e.name || "") + " | " + (e.entryName || "");
+  document.getElementById("editGoalsInput").value = e.goals || "";
+  document.getElementById("editSaveMsg").textContent = "";
+
+  // Build group ranking selects — one per group
+  const grid = document.getElementById("editGroupsGrid");
+  grid.innerHTML = "";
+  Object.entries(GROUPS).forEach(([grp, teams]) => {
+    const currentOrder = (e.groupPicks && e.groupPicks[grp]) ? e.groupPicks[grp] : [...teams];
+    const div = document.createElement("div");
+    div.style.cssText = "background:#111;border-radius:8px;padding:10px;";
+    div.innerHTML = "<div style='font-weight:700;font-size:12px;margin-bottom:6px;color:var(--gold,#e6a817)'>Group " + grp + "</div>";
+    // 4 position selects — position 1..4, each a dropdown of the 4 teams
+    [0,1,2,3].forEach(pos => {
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;align-items:center;gap:6px;margin-bottom:4px;";
+      row.innerHTML = "<span style='font-size:11px;color:#888;width:16px'>" + (pos+1) + ".</span>";
+      const sel = document.createElement("select");
+      sel.dataset.group = grp;
+      sel.dataset.pos = pos;
+      sel.className = "edit-pick-sel";
+      sel.style.cssText = "flex:1;background:#222;color:#fff;border:1px solid #444;border-radius:4px;padding:3px;font-size:12px;";
+      teams.forEach(team => {
+        const opt = document.createElement("option");
+        opt.value = team;
+        opt.textContent = team;
+        if (currentOrder[pos] === team) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      row.appendChild(sel);
+      div.appendChild(row);
+    });
+    grid.appendChild(div);
+  });
+
+  document.getElementById("editEntryModal").style.display = "block";
+}
+
+function closeEditEntry() {
+  document.getElementById("editEntryModal").style.display = "none";
+  _editEntryKey = null;
+}
+
+async function saveEditEntry() {
+  if (!_editEntryKey) return;
+  const k = _editEntryKey;
+  const msgEl = document.getElementById("editSaveMsg");
+
+  // Validate: each group must have 4 unique teams selected
+  const newGroupPicks = {};
+  let valid = true;
+  Object.keys(GROUPS).forEach(grp => {
+    const sels = [...document.querySelectorAll(".edit-pick-sel[data-group='" + grp + "']")]
+      .sort((a,b) => a.dataset.pos - b.dataset.pos);
+    const picked = sels.map(s => s.value);
+    const unique = new Set(picked);
+    if (unique.size !== 4) { valid = false; }
+    newGroupPicks[grp] = picked;
+  });
+
+  if (!valid) {
+    msgEl.style.color = "red";
+    msgEl.textContent = "⚠ Each group must have 4 different teams selected.";
+    return;
+  }
+
+  const goalsVal = parseInt(document.getElementById("editGoalsInput").value);
+  if (!goalsVal || goalsVal < 0) {
+    msgEl.style.color = "red";
+    msgEl.textContent = "⚠ Please enter a valid goals tiebreaker.";
+    return;
+  }
+
+  const entryName = S.entries[k] ? (S.entries[k].entryName || k) : k;
+  if (!confirm("Save picks for \"" + entryName + "\"? This will overwrite their current group picks and tiebreaker only. All other entries are untouched.")) return;
+
+  msgEl.style.color = "#aaa";
+  msgEl.textContent = "Saving…";
+
+  // Step 1: Load fresh remote state
+  await loadRemote();
+
+  // Step 2: Check entry still exists
+  if (!S.entries[k]) {
+    msgEl.style.color = "red";
+    msgEl.textContent = "⚠ Entry not found after remote load. Aborting.";
+    return;
+  }
+
+  // Step 3: Patch ONLY this entry's groupPicks and goals
+  S.entries[k].groupPicks = newGroupPicks;
+  S.entries[k].goals = goalsVal;
+
+  // Step 4: Push (pushRemote re-fetches remote again before saving — double protection)
+  await pushRemote();
+
+  msgEl.style.color = "green";
+  msgEl.textContent = "✓ Saved successfully!";
+  renderAdminContent();
+}
+</script>
 </body>
 </html>
