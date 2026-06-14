@@ -727,7 +727,7 @@ let espnPollTimer = null;
 
 async function fetchESPNScores(){
   try {
-    const r = await fetch(ESPN_API + "?limit=100");
+    const r = await fetch(ESPN_API + "?limit=200&dates=20260611-20260628");
     if(!r.ok) return;
     const data = await r.json();
     const events = data.events || [];
