@@ -722,6 +722,7 @@ function findGroup(team){
 }
 
 let liveScoresCache = [];
+let liveGroupRankings = {}; // provisional rankings once all 4 teams have played ≥1 game
 let espnPollTimer = null;
 
 async function fetchESPNScores(){
@@ -790,6 +791,24 @@ async function fetchESPNScores(){
       else { groupStats[grp][homeName].pts+=1; groupStats[grp][awayName].pts+=1; }
     }
 
+    // Compute provisional live rankings for groups where all 4 teams have played ≥1 game
+    liveGroupRankings = {};
+    for(const [grp, teams] of Object.entries(GROUPS)){
+      const stats = groupStats[grp];
+      if(!stats) continue;
+      // All 4 teams must have played at least 1 game
+      if(!teams.every(t => stats[t] && stats[t].played >= 1)) continue;
+      const sorted = [...teams].sort((a,b)=>{
+        const sa=stats[a]||{pts:0,gf:0,ga:0}, sb=stats[b]||{pts:0,gf:0,ga:0};
+        if(sb.pts!==sa.pts) return sb.pts-sa.pts;
+        const gdA=sa.gf-sa.ga, gdB=sb.gf-sb.ga;
+        if(gdB!==gdA) return gdB-gdA;
+        return sb.gf-sa.gf;
+      });
+      liveGroupRankings[grp] = {};
+      sorted.forEach((t,i) => liveGroupRankings[grp][t] = i+1);
+    }
+
     // Update adminResults for completed groups
     let changed = false;
     let allGroupsDone = true;
@@ -829,6 +848,9 @@ async function fetchESPNScores(){
     }
 
     updateLiveUI();
+    // Re-render leaderboard live if it's the active tab
+    const lbTab = document.getElementById("leaderboard");
+    if(lbTab && lbTab.style.display !== "none") renderLeaderboard();
   } catch(e){ console.warn("ESPN fetch failed:", e); }
 }
 
@@ -1739,12 +1761,24 @@ function renderLeaderboard(){
   const keys=Object.keys(S.entries);
   if(!keys.length){ document.getElementById("lbContent").innerHTML=`<p style="color:var(--text2);font-size:14px">No entries yet.</p>`; return; }
   const actual=S.adminGoals;
-  const showGoals = groupsLocked(); // hide goals guess until entries are locked
+  const showGoals = groupsLocked();
+
+  // Merge confirmed adminResults with provisional liveGroupRankings
+  // adminResults (all 3 games played) takes priority; liveGroupRankings fills in the rest
+  const effectiveResults = {};
+  for(const grp of Object.keys(GROUPS)){
+    if(S.adminResults[grp]) effectiveResults[grp] = S.adminResults[grp];
+    else if(liveGroupRankings[grp]) effectiveResults[grp] = liveGroupRankings[grp];
+  }
+  const liveGroupCount = Object.keys(liveGroupRankings).length;
+  const confirmedGroupCount = Object.keys(S.adminResults).length;
+  const hasLiveData = liveGroupCount > 0;
+
   const scores=keys.map(k=>{
     const e=S.entries[k];
     let gp=0;
     Object.entries(GROUPS).forEach(([grp])=>{
-      const res=S.adminResults[grp], pred=e.groupPicks&&e.groupPicks[grp];
+      const res=effectiveResults[grp], pred=e.groupPicks&&e.groupPicks[grp];
       if(!res||!pred) return;
       pred.forEach((team,i)=>{ if(res[team]===i+1) gp++; });
     });
@@ -1759,7 +1793,17 @@ function renderLeaderboard(){
   });
 
   const medals=["medal-1","medal-2","medal-3"];
-  let html=`<table class="lb"><thead><tr>
+  let html=``;
+
+  // Live scoring banner
+  if(hasLiveData){
+    html+=`<div style="background:rgba(59,185,80,0.1);border:1px solid rgba(59,185,80,0.3);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#3fb950;display:flex;align-items:center;gap:8px;">
+      <span style="width:8px;height:8px;background:#3fb950;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite"></span>
+      Live scoring active — ${liveGroupCount} group${liveGroupCount!==1?'s':''} in progress (${confirmedGroupCount} confirmed final)
+    </div>`;
+  }
+
+  html+=`<table class="lb"><thead><tr>
     <th>#</th><th>Entry</th><th>Entrant</th>
     <th>Picks</th>
     <th class="right">Group pts</th><th class="right">Bracket pts</th>
@@ -1793,6 +1837,7 @@ function renderLeaderboard(){
   html+=`</tbody></table>`;
   if(showGoals&&actual!=null) html+=`<p style="font-size:12px;color:var(--text2);margin-top:.6rem">Actual total goals: <strong style="color:var(--gold)">${actual}</strong> — tiebreaker active</p>`;
   if(!showGoals) html+=`<p style="font-size:12px;color:var(--text3);margin-top:.6rem">⏳ Goals tiebreaker hidden until entries lock on June 11.</p>`;
+  if(hasLiveData) html+=`<p style="font-size:11px;color:var(--text3);margin-top:.4rem">⚡ Scores update live as groups progress. Points shown reflect current standings.</p>`;
   document.getElementById("lbContent").innerHTML=html;
 }
 
