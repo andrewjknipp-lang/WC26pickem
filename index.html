@@ -872,7 +872,7 @@ function updateLiveUI(){
   if(sec && grid){
     const todayMatches = liveScoresCache.filter(m=>{
       const d=new Date(m.date);
-      return d.toDateString()===now.toDateString() || m.isLive || m.isFinal;
+      return d.toDateString()===now.toDateString() || m.isLive;
     }).slice(0,16);
     if(todayMatches.length){
       sec.style.display="block";
