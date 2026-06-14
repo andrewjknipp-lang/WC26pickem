@@ -748,8 +748,8 @@ async function fetchESPNScores(){
       const awayScore = parseInt(away.score)||0;
       const status = ev.status?.type?.name || "";
       const statusDesc = ev.status?.type?.description || "";
-      const isFinal = status === "STATUS_FINAL";
-      const isLive  = status === "STATUS_IN_PROGRESS";
+      const isFinal = status === "STATUS_FINAL" || status === "STATUS_FULL_TIME";
+      const isLive  = !isFinal && (ev.status?.type?.state === "in");
       const clock   = ev.status?.displayClock || "";
 
       liveScoresCache.push({ homeName, awayName, homeScore, awayScore, isFinal, isLive, clock, statusDesc, date: ev.date });
@@ -778,7 +778,7 @@ async function fetchESPNScores(){
       const awayName = normalizeTeam(away.team.displayName||away.team.name);
       const homeScore = parseInt(home.score)||0;
       const awayScore = parseInt(away.score)||0;
-      const isFinal = ev.status?.type?.name === "STATUS_FINAL";
+      const isFinal = ev.status?.type?.name === "STATUS_FINAL" || ev.status?.type?.name === "STATUS_FULL_TIME";
       if(!isFinal) continue;
       const grp = findGroup(homeName)||findGroup(awayName);
       if(!grp) continue;
