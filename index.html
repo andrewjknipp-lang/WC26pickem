@@ -2251,11 +2251,13 @@ const FINAL_GROUP_RESULTS = {
 };
 
 loadLocal();
-// Always apply final group results — overrides any provisional ESPN data
-S.adminResults = Object.assign({}, FINAL_GROUP_RESULTS);
 S.currentEntry = null; // always start fresh — user must load their entry
 loadRemote().then(()=>{ 
-  S.adminUnlocked = false; // lock admin after remote state loads
+  // Always apply final confirmed group results — overrides any provisional ESPN/npoint data
+  S.adminResults = Object.assign({}, FINAL_GROUP_RESULTS);
+  S.adminUnlocked = false;
+  saveLocal();
+  syncDebounced(); // push correct results to npoint
   renderEntryPills(); 
   updateEntryBars(); 
   startESPNPolling(); 
