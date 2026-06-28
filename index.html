@@ -472,7 +472,14 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
       <div class="form-group">
         <label class="form-label">Entry name</label>
         <input type="text" id="regEntry" placeholder="e.g. Dark Horses FC" style="width:100%" />
-        <span class="form-hint">Give your picks a fun name</span>
+        <span class="form-hint">Give your picks a fun name — or <a href="#" onclick="showExistingEntryPicker();return false;" style="color:var(--gold)">select an existing entry</a> to reset your PIN</span>
+      </div>
+      <div id="existingEntryPicker" style="display:none;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <p style="font-size:12px;color:var(--text2);margin:0 0 8px">Select your entry to reset your PIN:</p>
+        <select id="existingEntrySelect" style="width:100%;padding:8px;background:#111;color:#fff;border:1px solid #444;border-radius:6px;font-size:14px;">
+          <option value="">— choose your entry —</option>
+        </select>
+        <button onclick="useExistingEntry()" style="margin-top:8px;background:var(--gold);color:#000;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;">Use this entry</button>
       </div>
     </div>
     <div style="margin-bottom:14px">
@@ -1444,7 +1451,29 @@ function updateEntryBars(){
 // ── REGISTER ──────────────────────────────────────
 
 
-function registerEntry(){
+function showExistingEntryPicker(){
+  const picker = document.getElementById('existingEntryPicker');
+  const sel = document.getElementById('existingEntrySelect');
+  // Populate with existing entries
+  const keys = Object.keys(S.entries||{}).sort();
+  sel.innerHTML = '<option value="">— choose your entry —</option>' +
+    keys.map(k => `<option value="${k.replace(/"/g,'&quot;')}">${k} (${S.entries[k].name||''})</option>`).join('');
+  picker.style.display = 'block';
+}
+
+function useExistingEntry(){
+  const sel = document.getElementById('existingEntrySelect');
+  const key = sel.value;
+  if(!key){ alert('Please select an entry.'); return; }
+  document.getElementById('regEntry').value = key;
+  // Pre-fill name if available
+  if(S.entries[key] && S.entries[key].name){
+    document.getElementById('regName').value = S.entries[key].name;
+  }
+  document.getElementById('existingEntryPicker').style.display = 'none';
+  // Focus PIN field
+  document.getElementById('regPin').focus();
+}
   const name=document.getElementById("regName").value.trim();
   const entry=document.getElementById("regEntry").value.trim();
   const pin=document.getElementById("regPin").value.trim();
