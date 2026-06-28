@@ -428,55 +428,84 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 
 <!-- REGISTER -->
 <div id="register" class="section active">
-  <p class="page-title">My Entry</p>
+  <p class="page-title">Join the Pick'em</p>
+  <p class="page-sub">Create your entry, then rank the groups and call the bracket all the way to the final.</p>
 
   <div id="setupNotice" style="display:none" class="card" style="margin-bottom:1.5rem;max-width:600px">
     <p style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);margin-bottom:.75rem">&#x26A0; Storage not configured</p>
-    <p style="font-size:14px;color:var(--text2);margin-bottom:1rem">To share this pick'em with others, configure npoint.io storage.</p>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:1rem">To share this pick'em with others, configure jsonbin.io storage. Until then, picks are saved locally in this browser only.</p>
+    <div class="setup-steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><p>Go to <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> and create a free account.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><p>After login, click your avatar → <strong>API Keys</strong> → copy your Master Key.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><p>Open <code>index.html</code> in a text editor. Find the line <code>const JSONBIN_KEY = ""</code> near the top of the script and paste your key inside the quotes.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><p>Save the file and push to GitHub Pages. Your pick'em will now sync across all participants.</p></div></div>
+    </div>
   </div>
 
-  <!-- LOAD MY ENTRY -->
+  <div style="margin-bottom:1.5rem;max-width:460px;background:rgba(0,141,255,.07);border:1px solid rgba(0,141,255,.25);border-radius:var(--radius-lg);padding:1rem 1.25rem">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.6rem">
+      <span style="font-size:22px">💸</span>
+      <p style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#4fc3f7;letter-spacing:.04em">Entry Fee — $25</p>
+    </div>
+    <p style="font-size:13px;color:var(--text);margin-bottom:.5rem">Venmo <strong style="color:#4fc3f7">@andrew-knipp</strong> $25 before the first match kicks off on <strong>June 11</strong> to lock in your entry.</p>
+    <div style="display:flex;gap:8px;margin-top:.75rem;flex-wrap:wrap">
+      <div style="flex:1;min-width:140px;background:rgba(255,184,0,.1);border:1px solid rgba(255,184,0,.25);border-radius:var(--radius);padding:8px 12px;text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#f5c842">🥇 1st place</div>
+        <div style="font-size:12px;color:var(--text2)">60% of pot</div>
+      </div>
+      <div style="flex:1;min-width:140px;background:rgba(139,148,158,.1);border:1px solid rgba(139,148,158,.2);border-radius:var(--radius);padding:8px 12px;text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#8b949e">🥈 2nd place</div>
+        <div style="font-size:12px;color:var(--text2)">25% of pot</div>
+      </div>
+      <div style="flex:1;min-width:140px;background:rgba(193,109,55,.1);border:1px solid rgba(193,109,55,.25);border-radius:var(--radius);padding:8px 12px;text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#cd7f32">🥉 3rd place</div>
+        <div style="font-size:12px;color:var(--text2)">Money back (15%)</div>
+      </div>
+    </div>
+  </div>
   <div class="card" style="max-width:460px;margin-bottom:1.5rem">
-    <p style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);margin-bottom:.25rem;letter-spacing:.04em">⚽ Load My Entry</p>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Select your entry name and enter your PIN.</p>
-    <div style="margin-bottom:14px">
-      <label class="form-label">Your entry</label>
-      <select id="switchName" style="width:100%;padding:10px;background:#111;color:#fff;border:1px solid #444;border-radius:8px;font-size:15px;margin-top:4px">
-        <option value="">— select your entry —</option>
-      </select>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="form-group">
+        <label class="form-label">Your name</label>
+        <input type="text" id="regName" placeholder="e.g. Andrew" style="width:100%" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Entry name</label>
+        <input type="text" id="regEntry" placeholder="e.g. Dark Horses FC" style="width:100%" />
+        <span class="form-hint">Give your picks a fun name</span>
+      </div>
     </div>
-    <div style="margin-bottom:16px">
-      <label class="form-label">PIN</label>
-      <input type="password" id="switchPin" placeholder="••••" maxlength="4" inputmode="numeric" class="pin-input" style="width:100px;margin-top:4px" />
+    <div style="margin-bottom:14px">
+      <div class="form-group">
+        <label class="form-label">PIN <span style="font-weight:400;text-transform:none;font-size:11px">(4 digits — protects your entry)</span></label>
+        <input type="password" id="regPin" placeholder="e.g. 1234" maxlength="4" inputmode="numeric" class="pin-input" style="letter-spacing:.15em" />
+        <span class="pin-hint">You'll need this to load your entry later. Don't forget it!</span>
+      </div>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button class="btn btn-gold" onclick="switchEntry()" style="font-size:15px;padding:10px 28px">▶ Load Entry</button>
-      <span id="switchErr" class="msg-err"></span>
-    </div>
-    <div id="entryPills" style="margin-top:1rem"></div>
-  </div>
-
-  <!-- PIN RESET TROUBLESHOOT -->
-  <div class="card" style="max-width:460px;margin-bottom:1.5rem;border-color:rgba(251,146,60,.5);background:rgba(251,146,60,.05)">
-    <p style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#fb923c;margin-bottom:.25rem;letter-spacing:.04em">🔑 Can't Log In? Reset Your PIN</p>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Select your entry, enter your name and a new PIN. Your group picks and bracket picks are safe — this only resets your password.</p>
-    <div style="margin-bottom:14px">
-      <label class="form-label">Select your entry</label>
-      <select id="existingEntrySelect" style="width:100%;padding:10px;background:#111;color:#fff;border:1px solid #555;border-radius:8px;font-size:15px;margin-top:4px">
-        <option value="">— choose your entry —</option>
-      </select>
-    </div>
-    <div style="margin-bottom:16px">
-      <label class="form-label">New PIN <span style="font-weight:400;text-transform:none;font-size:11px">(4 digits)</span></label>
-      <input type="password" id="regPin" placeholder="1234" maxlength="4" inputmode="numeric" class="pin-input" style="letter-spacing:.15em;width:120px;margin-top:4px" />
-    </div>
-    <input type="hidden" id="regEntry" value="" />
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button class="btn" onclick="pinResetFromDropdown()" style="background:#fb923c;color:#000;font-weight:700;padding:10px 24px;font-size:15px;border:none">🔑 Reset PIN &amp; Log In</button>
+      <button class="btn btn-gold" onclick="registerEntry()">&#x2713; Create entry</button>
       <span id="regStatus" class="msg-ok"></span>
       <span id="regError" class="msg-err"></span>
     </div>
   </div>
+
+  <div id="switchBox" style="max-width:500px">
+    <p style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Load My Entry</p>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:.75rem">
+      <div class="form-group">
+        <label class="form-label">Entry name</label>
+        <input type="text" id="switchName" placeholder="Your entry name" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">PIN</label>
+        <input type="password" id="switchPin" placeholder="••••" maxlength="4" inputmode="numeric" class="pin-input" />
+      </div>
+      <button class="btn" onclick="switchEntry()" style="margin-bottom:0">Load entry</button>
+      <span id="switchErr" class="msg-err"></span>
+    </div>
+    <div id="entryPills"></div>
+  </div>
+</div>
 
 <!-- GROUP PICKS -->
 <div id="groups" class="section">
@@ -1416,56 +1445,57 @@ function updateEntryBars(){
 
 
 function registerEntry(){
-  // Legacy stub — registration now handled by pinResetFromDropdown
-  console.log('registerEntry called but not used in current UI');
-}
-function switchEntry(){
-  const sel = document.getElementById('switchName');
-  const k = sel ? sel.value.trim() : '';
-  const pin = document.getElementById('switchPin').value.trim();
-  const err = document.getElementById('switchErr');
-  err.textContent = '';
-  if(!k){ err.textContent = 'Select your entry.'; return; }
-  if(!S.entries[k]){ err.textContent = 'Entry not found.'; return; }
-  if(!pin || !/^\d{4}$/.test(pin)){ err.textContent = 'Enter your 4-digit PIN.'; return; }
-  if(!checkPin(k, pin)){ err.textContent = 'Wrong PIN — try again.'; return; }
-  S.currentEntry = k;
-  saveLocal(); renderEntryPills(); updateEntryBars();
-  err.style.color = '#4ade80';
-  err.textContent = '✓ Loaded! Use the tabs above to make your picks.';
+  const name=document.getElementById("regName").value.trim();
+  const entry=document.getElementById("regEntry").value.trim();
+  const pin=document.getElementById("regPin").value.trim();
+  const err=document.getElementById("regError");
+  err.textContent="";
+  if(!name){ err.textContent="Enter your name."; return; }
+  if(!entry){ err.textContent="Enter an entry name."; return; }
+  if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){ err.textContent="Enter a 4-digit PIN."; return; }
+  if(S.entries[entry]){
+    // Only block if entry already has a PIN and they got it wrong.
+    // If pinHash is null (lost/reset), allow any PIN to claim it.
+    if(S.entries[entry].pinHash && !checkPin(entry, pin)){ err.textContent="That entry name is taken — wrong PIN."; return; }
+  }
+  const pinHash = hashPin(pin);
+  const isNew = !S.entries[entry];
+  if(isNew){
+    // Brand new entry — initialise with empty picks
+    S.entries[entry] = { name, entryName:entry, goals:null, pinHash, joined:new Date().toLocaleDateString(), groupPicks:{}, bracketPicks:{} };
+  } else {
+    // Existing entry — only update name and pinHash, NEVER touch picks or goals
+    S.entries[entry].name = name;
+    S.entries[entry].pinHash = pinHash;
+  }
+  S.currentEntry=entry;
+  syncDebounced();
+  document.getElementById("regStatus").textContent="Entry created — go make your picks!";
+  setTimeout(()=>document.getElementById("regStatus").textContent="",3000);
+  renderEntryPills(); updateEntryBars();
 }
 
-function pinResetFromDropdown(){
-  const sel = document.getElementById('existingEntrySelect');
-  const k = sel ? sel.value.trim() : '';
-  const pin = document.getElementById('regPin').value.trim();
-  const err = document.getElementById('regError');
-  const ok = document.getElementById('regStatus');
-  err.textContent = ''; ok.textContent = '';
-  if(!k){ err.textContent = 'Select your entry.'; return; }
-  if(!pin || !/^\d{4}$/.test(pin)){ err.textContent = 'Enter a 4-digit PIN.'; return; }
-  if(!S.entries[k]){ err.textContent = 'Entry not found.'; return; }
-  S.entries[k].pinHash = hashPin(pin);
-  S.currentEntry = k;
-  syncDebounced();
-  ok.textContent = '✓ PIN reset — you\'re logged in! Use the tabs above to make your picks.';
-  saveLocal(); renderEntryPills(); updateEntryBars();
+function switchEntry(){
+  const val=document.getElementById("switchName").value.trim();
+  const pin=document.getElementById("switchPin").value.trim();
+  const err=document.getElementById("switchErr");
+  if(!S.entries[val]){ err.textContent="Entry not found."; return; }
+  if(!checkPin(val, pin)){ err.textContent="Incorrect PIN."; return; }
+  err.textContent="";
+  S.currentEntry=val;
+  saveLocal();
+  renderEntryPills(); updateEntryBars();
+  showTab("groups");
 }
 
 function renderEntryPills(){
   const el=document.getElementById("entryPills");
-  const keys=Object.keys(S.entries).sort();
-  // Populate both dropdowns on register tab
-  const makeOpts = (placeholder) => `<option value="">${placeholder}</option>` +
-    keys.map(k=>`<option value="${k.replace(/"/g,'&quot;')}">${k} (${S.entries[k].name||''})</option>`).join('');
-  const switchSel = document.getElementById('switchName');
-  const resetSel  = document.getElementById('existingEntrySelect');
-  if(switchSel) switchSel.innerHTML = makeOpts('— select your entry —');
-  if(resetSel)  resetSel.innerHTML  = makeOpts('— choose your entry —');
+  const keys=Object.keys(S.entries);
   if(!keys.length){ el.innerHTML=`<p style="font-size:13px;color:var(--text2)">No entries yet.</p>`; return; }
-  el.innerHTML=`<p style="font-size:12px;color:var(--text2);margin-bottom:5px">Currently loaded:</p>`+
-    keys.map(k=>`<span class="entry-pill${S.currentEntry===k?" active-pill":""}" onclick="quickSwitch('${k.replace(/'/g,"\\'")}')">${k} <small style="opacity:.6">${S.entries[k].name}</small>${S.currentEntry===k?' <span style="font-size:10px">✓</span>':''}</span>`).join("");
+  el.innerHTML=`<p style="font-size:12px;color:var(--text2);margin-bottom:5px">Click an entry to switch to it:</p>`+
+    keys.map(k=>`<span class="entry-pill${S.currentEntry===k?" active-pill":""}" onclick="quickSwitch('${k}')">${k} <small style="opacity:.6">${S.entries[k].name}</small>${S.currentEntry===k?' <span style="font-size:10px">✓</span>':''}</span>`).join("");
 }
+
 function quickSwitch(k){
   if(S.currentEntry===k) return;
   const pin=prompt(`Enter PIN for entry "${k}":`);
