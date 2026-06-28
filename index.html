@@ -1246,7 +1246,7 @@ function deadlineBarHTML(id, targetDate, openMsg, warningMsg, lockedMsg, pending
   const msg = isWarning ? warningMsg : openMsg;
   return `<div class="deadline-bar ${cls}" id="${id}">
     <span class="dl-icon">${isWarning ? "⚠️" : "✅"}</span>
-    <div><div class="dl-label">${msg}</div><div class="dl-sub">Locks: 12:00pm PT — Sun Jun 29</div></div>
+    <div><div class="dl-label">${msg}</div><div class="dl-sub">Locks: ${targetDate.toLocaleString()}</div></div>
     <div class="dl-timer">
       <div class="dl-unit"><span class="dl-num" id="${id}-d">${String(t.d).padStart(2,"0")}</span><span class="dl-lbl">Days</span></div>
       <div class="dl-unit"><span class="dl-num" id="${id}-h">${String(t.h).padStart(2,"0")}</span><span class="dl-lbl">Hrs</span></div>
