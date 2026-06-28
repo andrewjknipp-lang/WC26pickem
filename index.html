@@ -1728,39 +1728,27 @@ function renderBracket(){
   const bp=(entry&&entry.bracketPicks)||{};
 
   const r32=[
-    // Official FIFA 2026 R32 bracket (fixed slots, pre-published)
-    // Match 73 - Jun 28: Group A runner-up vs Group B runner-up
-    {id:"r32_1", lbl:"R32 · M73", t1:getSlot(adv,"A",1), t2:getSlot(adv,"B",1)},
-    // Match 76 - Jun 29: Group C winner vs Group F runner-up
-    {id:"r32_2", lbl:"R32 · M76", t1:getSlot(adv,"C",0), t2:getSlot(adv,"F",1)},
-    // Match 74 - Jun 29: Group E winner vs Paraguay (Group D 3rd) — CONFIRMED
-    {id:"r32_3", lbl:"R32 · M74", t1:getSlot(adv,"E",0), t2:"Paraguay"},
-    // Match 75 - Jun 30: Group F winner vs Group C runner-up
-    {id:"r32_4", lbl:"R32 · M75", t1:getSlot(adv,"F",0), t2:getSlot(adv,"C",1)},
-    // Match 78 - Jun 30: Group E runner-up vs Group I runner-up
-    {id:"r32_5", lbl:"R32 · M78", t1:getSlot(adv,"E",1), t2:getSlot(adv,"I",1)},
-    // Match 77 - Jun 30: Group I winner vs Sweden (Group F 3rd) — CONFIRMED
-    {id:"r32_6", lbl:"R32 · M77", t1:getSlot(adv,"I",0), t2:"Sweden"},
-    // Match 79 - Jul 1: Group A winner vs Ecuador (Group E 3rd) — CONFIRMED
-    {id:"r32_7", lbl:"R32 · M79", t1:getSlot(adv,"A",0), t2:"Ecuador"},
-    // Match 80 - Jul 1: Group L winner vs DR Congo (Group K 3rd) — CONFIRMED
-    {id:"r32_8", lbl:"R32 · M80", t1:getSlot(adv,"L",0), t2:"DR Congo"},
-    // Match 82 - Jul 1: Group D winner vs Bosnia-Herzegovina (Group B 3rd) — CONFIRMED
-    {id:"r32_9", lbl:"R32 · M82", t1:getSlot(adv,"D",0), t2:"Bosnia-Herzegovina"},
-    // Match 81 - Jul 2: Group G winner vs Senegal (Group I 3rd) — CONFIRMED
-    {id:"r32_10",lbl:"R32 · M81", t1:getSlot(adv,"G",0), t2:"Senegal"},
-    // Match 84 - Jul 2: Group H winner vs Group J runner-up
-    {id:"r32_11",lbl:"R32 · M84", t1:getSlot(adv,"H",0), t2:getSlot(adv,"J",1)},
-    // Match 83 - Jul 3: Group K runner-up vs Group L runner-up
-    {id:"r32_12",lbl:"R32 · M83", t1:getSlot(adv,"K",1), t2:getSlot(adv,"L",1)},
-    // Match 85 - Jul 3: Group B winner vs Algeria (Group J 3rd) — CONFIRMED
-    {id:"r32_13",lbl:"R32 · M85", t1:getSlot(adv,"B",0), t2:"Algeria"},
-    // Match 86 - Jul 3: Group J winner vs Group H runner-up
-    {id:"r32_14",lbl:"R32 · M86", t1:getSlot(adv,"J",0), t2:getSlot(adv,"H",1)},
-    // Match 88 - Jul 3: Group D runner-up vs Group G runner-up
-    {id:"r32_15",lbl:"R32 · M88", t1:getSlot(adv,"D",1), t2:getSlot(adv,"G",1)},
-    // Match 87 - Jul 3: Group K winner vs Ghana (Group L 3rd) — CONFIRMED
-    {id:"r32_16",lbl:"R32 · M87", t1:getSlot(adv,"K",0), t2:"Ghana"},
+    // Ordered so adjacent pairs feed the same R16 match (matches The Athletic/ESPN bracket)
+    // LEFT HALF — Philadelphia/Houston quadrant
+    {id:"r32_3", lbl:"R32 · M74", t1:getSlot(adv,"E",0), t2:"Paraguay"},          // Germany vs Paraguay
+    {id:"r32_6", lbl:"R32 · M77", t1:getSlot(adv,"I",0), t2:"Sweden"},             // France vs Sweden
+    {id:"r32_1", lbl:"R32 · M73", t1:getSlot(adv,"A",1), t2:getSlot(adv,"B",1)},  // South Africa vs Canada
+    {id:"r32_4", lbl:"R32 · M75", t1:getSlot(adv,"F",0), t2:getSlot(adv,"C",1)},  // Netherlands vs Morocco
+    // LEFT HALF — Dallas/Seattle quadrant
+    {id:"r32_12",lbl:"R32 · M83", t1:getSlot(adv,"K",1), t2:getSlot(adv,"L",1)},  // Portugal vs Croatia
+    {id:"r32_11",lbl:"R32 · M84", t1:getSlot(adv,"H",0), t2:getSlot(adv,"J",1)},  // Spain vs Austria
+    {id:"r32_9", lbl:"R32 · M82", t1:getSlot(adv,"D",0), t2:"Bosnia-Herzegovina"}, // USA vs Bosnia
+    {id:"r32_10",lbl:"R32 · M81", t1:getSlot(adv,"G",0), t2:"Senegal"},            // Belgium vs Senegal
+    // RIGHT HALF — New York/Mexico City quadrant
+    {id:"r32_2", lbl:"R32 · M76", t1:getSlot(adv,"C",0), t2:getSlot(adv,"F",1)},  // Brazil vs Japan
+    {id:"r32_5", lbl:"R32 · M78", t1:getSlot(adv,"E",1), t2:getSlot(adv,"I",1)},  // Ivory Coast vs Norway
+    {id:"r32_7", lbl:"R32 · M79", t1:getSlot(adv,"A",0), t2:"Ecuador"},            // Mexico vs Ecuador
+    {id:"r32_8", lbl:"R32 · M80", t1:getSlot(adv,"L",0), t2:"DR Congo"},           // England vs DR Congo
+    // RIGHT HALF — Atlanta/Vancouver quadrant
+    {id:"r32_14",lbl:"R32 · M86", t1:getSlot(adv,"J",0), t2:getSlot(adv,"H",1)},  // Argentina vs Cape Verde
+    {id:"r32_15",lbl:"R32 · M88", t1:getSlot(adv,"D",1), t2:getSlot(adv,"G",1)},  // Australia vs Egypt
+    {id:"r32_13",lbl:"R32 · M85", t1:getSlot(adv,"B",0), t2:"Algeria"},            // Switzerland vs Algeria
+    {id:"r32_16",lbl:"R32 · M87", t1:getSlot(adv,"K",0), t2:"Ghana"},              // Colombia vs Ghana
   ];
 
   function nextRound(prev, n, lblFn){
