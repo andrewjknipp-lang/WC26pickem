@@ -662,6 +662,14 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
         <button class="btn" onclick="renderBackups()">&#x1F504; Refresh</button>
         <span class="msg-ok" id="backupMsg"></span>
       </div>
+
+    <!-- ONE-TIME SHEET RESTORE CARD — remove after use -->
+    <div class="card-sm" style="max-width:500px;margin-bottom:1rem;border:1px solid #b45309;background:rgba(180,83,9,0.08)">
+      <p style="font-size:13px;font-weight:600;margin-bottom:.25rem;color:#f59e0b">🔧 Restore Wiped Picks from Sheet Backup</p>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">Restores <strong>BillyDixPix</strong> and <strong>NoWeahGuey</strong> group picks + goals from the Jun 12 locked sheet. bracketPicks and all other fields are preserved. Shows a diff before writing.</p>
+      <button id="sheetRestoreBtn" class="btn" onclick="runSheetRestore()" style="background:#b45309;color:#fff">🔧 Run Restore</button>
+      <span id="sheetRestoreStatus" style="font-size:12px;margin-left:10px"></span>
+    </div>
     </div>
   </div>
 </div>
@@ -1985,6 +1993,155 @@ setInterval(()=>{ if(document.getElementById("picks")?.classList.contains("activ
 })();
 
 // ── BOOT ──────────────────────────────────────────
+
+// ── ONE-TIME SHEET RESTORE (remove after use) ─────────────────
+const _SHEET_RESTORE = {
+  "BillyDixPix": {
+    name: "Will", goals: 301,
+    groupPicks: {"A":["Mexico","South Korea","Czechia","South Africa"],"B":["Canada","Switzerland","Bosnia-Herzegovina","Qatar"],"C":["Brazil","Morocco","Scotland","Haiti"],"D":["United States","Türkiye","Australia","Paraguay"],"E":["Germany","Ecuador","Ivory Coast","Curaçao"],"F":["Netherlands","Japan","Sweden","Tunisia"],"G":["Belgium","Iran","Egypt","New Zealand"],"H":["Spain","Uruguay","Saudi Arabia","Cape Verde"],"I":["France","Senegal","Norway","Iraq"],"J":["Argentina","Austria","Algeria","Jordan"],"K":["Portugal","Colombia","Uzbekistan","DR Congo"],"L":["England","Croatia","Panama","Ghana"]}
+  },
+  "NoWeahGuey": {
+    name: "Gabe", goals: 235,
+    groupPicks: {"A":["Mexico","Czechia","South Korea","South Africa"],"B":["Switzerland","Canada","Bosnia-Herzegovina","Qatar"],"C":["Brazil","Morocco","Scotland","Haiti"],"D":["Türkiye","United States","Paraguay","Australia"],"E":["Ecuador","Germany","Ivory Coast","Curaçao"],"F":["Netherlands","Japan","Sweden","Tunisia"],"G":["Belgium","Egypt","Iran","New Zealand"],"H":["Spain","Uruguay","Cape Verde","Saudi Arabia"],"I":["France","Norway","Senegal","Iraq"],"J":["Argentina","Austria","Algeria","Jordan"],"K":["Portugal","Colombia","Uzbekistan","DR Congo"],"L":["England","Croatia","Ghana","Panama"]}
+  }
+};
+
+async function runSheetRestore() {
+  const statusEl = document.getElementById('sheetRestoreStatus');
+  const btn = document.getElementById('sheetRestoreBtn');
+
+  function setStatus(msg, color) {
+    statusEl.textContent = msg;
+    statusEl.style.color = color || 'var(--text2)';
+  }
+
+  // Step 1: Show diff first
+  setStatus('Loading live data...', 'var(--text2)');
+  btn.disabled = true;
+
+  let fresh;
+  try {
+    const r = await fetch(NPOINT_URL, {cache: 'no-store'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    fresh = await r.json();
+  } catch(e) {
+    setStatus('✗ Failed to load npoint: ' + e.message, 'var(--err, #f87171)');
+    btn.disabled = false;
+    return;
+  }
+
+  // Build diff report
+  const targets = Object.keys(_SHEET_RESTORE);
+  let diffLines = [];
+  let patchNeeded = false;
+  for (const key of targets) {
+    const live = fresh.entries && fresh.entries[key];
+    const sheet = _SHEET_RESTORE[key];
+    if (!live) {
+      diffLines.push(key + ': MISSING from npoint entirely');
+      patchNeeded = true;
+    } else {
+      const gpCount = Object.keys(live.groupPicks || {}).length;
+      const bpCount = Object.keys(live.bracketPicks || {}).length;
+      const gpMatch = JSON.stringify(live.groupPicks) === JSON.stringify(sheet.groupPicks);
+      const goalsMatch = live.goals === sheet.goals;
+      if (!gpMatch || !goalsMatch) {
+        diffLines.push(key + ': groupPicks=' + gpCount + '/12, goals=' + live.goals + ' → will restore to 12 groups, goals=' + sheet.goals + '. bracketPicks=' + bpCount + ' (untouched)');
+        patchNeeded = true;
+      } else {
+        diffLines.push(key + ': already correct ✓');
+      }
+    }
+  }
+
+  if (!patchNeeded) {
+    setStatus('Both entries already have correct picks — no patch needed.', '#4ade80');
+    btn.disabled = false;
+    return;
+  }
+
+  const msg = 'PATCH PLAN\n\n' + diffLines.join('\n') + '\n\nOnly groupPicks, goals, name will be written.\nbracketPicks, pinHash, entryName, joined — all preserved.\nAll other entries — untouched.\n\nProceed?';
+  if (!confirm(msg)) {
+    setStatus('Cancelled.', 'var(--text2)');
+    btn.disabled = false;
+    return;
+  }
+
+  // Step 2: Re-fetch fresh before writing (double safety)
+  setStatus('Re-fetching before write...', 'var(--text2)');
+  try {
+    const r2 = await fetch(NPOINT_URL, {cache: 'no-store'});
+    if (!r2.ok) throw new Error('HTTP ' + r2.status);
+    fresh = await r2.json();
+  } catch(e) {
+    setStatus('✗ Re-fetch failed: ' + e.message + ' — nothing written.', 'var(--err, #f87171)');
+    btn.disabled = false;
+    return;
+  }
+
+  // Step 3: Surgical patch — spread existing entry, overwrite only 3 fields
+  let patched = 0;
+  for (const key of targets) {
+    const sheet = _SHEET_RESTORE[key];
+    const liveEntry = fresh.entries && fresh.entries[key];
+    const gpMatch = liveEntry && JSON.stringify(liveEntry.groupPicks) === JSON.stringify(sheet.groupPicks);
+    const goalsMatch = liveEntry && liveEntry.goals === sheet.goals;
+    if (gpMatch && goalsMatch) continue; // already correct, skip
+    fresh.entries[key] = Object.assign({}, liveEntry || {entryName: key, pinHash: null, joined: '6/12/2026', bracketPicks: {}}, {
+      name: sheet.name,
+      goals: sheet.goals,
+      groupPicks: sheet.groupPicks
+    });
+    patched++;
+  }
+
+  // Step 4: POST (same method as app's pushRemote)
+  setStatus('Posting patch to npoint...', 'var(--text2)');
+  try {
+    const r3 = await fetch(NPOINT_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(fresh)
+    });
+    if (!r3.ok) throw new Error('HTTP ' + r3.status);
+  } catch(e) {
+    setStatus('✗ POST failed: ' + e.message + ' — npoint NOT modified.', 'var(--err, #f87171)');
+    btn.disabled = false;
+    return;
+  }
+
+  // Step 5: Verify
+  setStatus('Verifying...', 'var(--text2)');
+  try {
+    const r4 = await fetch(NPOINT_URL, {cache: 'no-store'});
+    if (!r4.ok) throw new Error('HTTP ' + r4.status);
+    const verified = await r4.json();
+    let allOk = true;
+    for (const key of targets) {
+      const v = verified.entries && verified.entries[key];
+      const s = _SHEET_RESTORE[key];
+      if (!v || JSON.stringify(v.groupPicks) !== JSON.stringify(s.groupPicks) || v.goals !== s.goals) {
+        allOk = false;
+      }
+    }
+    if (allOk) {
+      setStatus('✓ Patch verified! ' + patched + ' entr' + (patched===1?'y':'ies') + ' restored. Reload the app to confirm.', '#4ade80');
+      // Reload local state from npoint
+      Object.assign(S, verified);
+      S.currentEntry = null;
+      saveLocal();
+      renderAdminContent();
+    } else {
+      setStatus('⚠ POST succeeded but verify check failed — reload and check manually.', '#facc15');
+    }
+  } catch(e) {
+    setStatus('POST succeeded but verify fetch failed: ' + e.message, '#facc15');
+  }
+
+  btn.disabled = false;
+}
+// ── END ONE-TIME SHEET RESTORE ────────────────────────────────
+
 loadLocal();
 S.currentEntry = null; // always start fresh — user must load their entry
 loadRemote().then(()=>{ 
