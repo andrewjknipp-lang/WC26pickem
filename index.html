@@ -1945,10 +1945,17 @@ function renderAdminContent(){
       <span class="badge ${gc===12?"badge-ok":"badge-warn"}" style="margin-left:6px">${gc}/12</span>
       <span class="badge ${bc>=16?"badge-ok":"badge-warn"}" style="margin-left:4px">${bc} picks</span>
       ${!e.pinHash ? '<span style="font-size:11px;background:rgba(220,38,38,0.2);color:#f87171;border:1px solid rgba(220,38,38,0.4);border-radius:4px;padding:2px 6px;margin-left:6px">⚠ no PIN — dupe</span>' : ''}
-      <button class="btn btn-warning" onclick="openEditEntry(${JSON.stringify(k)})" style="padding:3px 10px;font-size:11px;margin-left:8px;background:#e6a817;color:#fff;border:none;border-radius:4px;cursor:pointer">✎ Edit Picks</button>
-      <button class="btn btn-danger" onclick="deleteEntry(${JSON.stringify(k)})" style="padding:3px 10px;font-size:11px;margin-left:8px">✕ Delete</button>
+      <button class="btn btn-warning admin-edit-btn" data-key="${k.replace(/"/g,'&quot;')}" style="padding:3px 10px;font-size:11px;margin-left:8px;background:#e6a817;color:#fff;border:none;border-radius:4px;cursor:pointer">✎ Edit Picks</button>
+      <button class="btn btn-danger admin-delete-btn" data-key="${k.replace(/"/g,'&quot;')}" style="padding:3px 10px;font-size:11px;margin-left:8px">✕ Delete</button>
     </div>`;
   }).join("");
+  // Event delegation for delete/edit buttons (handles special chars in entry names)
+  ae.querySelectorAll('.admin-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteEntry(btn.dataset.key));
+  });
+  ae.querySelectorAll('.admin-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openEditEntry(btn.dataset.key));
+  });
 }
 
 function saveAdminGoals(){
