@@ -472,16 +472,17 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
       <div class="form-group">
         <label class="form-label">Entry name</label>
         <input type="text" id="regEntry" placeholder="e.g. Dark Horses FC" style="width:100%" />
-        <span class="form-hint">Give your picks a fun name — or <a href="#" onclick="showExistingEntryPicker();return false;" style="color:var(--gold)">select an existing entry</a> to reset your PIN</span>
-      </div>
-      <div id="existingEntryPicker" style="display:none;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
-        <p style="font-size:12px;color:var(--text2);margin:0 0 8px">Select your entry to reset your PIN:</p>
-        <select id="existingEntrySelect" style="width:100%;padding:8px;background:#111;color:#fff;border:1px solid #444;border-radius:6px;font-size:14px;">
-          <option value="">— choose your entry —</option>
-        </select>
-        <button onclick="useExistingEntry()" style="margin-top:8px;background:var(--gold);color:#000;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;">Use this entry</button>
+        <span class="form-hint">New entry, or <a href="#" onclick="showExistingEntryPicker();return false;" style="color:var(--gold)">select existing entry</a> to reset your PIN</span>
       </div>
     </div>
+    <div id="existingEntryPicker" style="display:none;margin-bottom:12px;background:rgba(255,184,0,0.07);border:1px solid rgba(255,184,0,0.3);border-radius:8px;padding:12px;">
+      <p style="font-size:12px;color:var(--text2);margin:0 0 8px">Select your entry to reset your PIN:</p>
+      <select id="existingEntrySelect" style="width:100%;padding:8px;background:#111;color:#fff;border:1px solid #444;border-radius:6px;font-size:14px;">
+        <option value="">— choose your entry —</option>
+      </select>
+      <button onclick="useExistingEntry()" style="margin-top:8px;background:var(--gold);color:#000;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;">Use this entry ↓</button>
+    </div>
+    <div style="margin-bottom:14px;display:none" id="_spacer_after_picker"></div>
     <div style="margin-bottom:14px">
       <div class="form-group">
         <label class="form-label">PIN <span style="font-weight:400;text-transform:none;font-size:11px">(4 digits — protects your entry)</span></label>
