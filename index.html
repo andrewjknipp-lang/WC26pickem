@@ -554,7 +554,6 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
     <span class="pt-chip"><b>4 pts</b> QF</span>
     <span class="pt-chip"><b>8 pts</b> SF</span>
     <span class="pt-chip"><b>16 pts</b> Final</span>
-    <span class="pt-chip"><b>4 pts</b> 3rd place</span>
   </div>
   <div id="bracketDeadlineWrap"></div>
   <div id="bracketNote" class="note">⚠️ Bracket picks open after the group stage ends (June 26). Check back then to fill in your knockout picks.</div>
@@ -1774,8 +1773,7 @@ function renderBracket(){
   const qf=nextRound(r16,4,i=>`QF · ${i+1}`);
   const sf=nextRound(qf,2,i=>`SF · ${i+1}`);
   const fin=[
-    {id:"final",lbl:"Final",t1:bp[sf[0].id]||"TBD",t2:bp[sf[1].id]||"TBD"},
-    {id:"third",lbl:"3rd place match",t1:"TBD",t2:"TBD"}
+    {id:"final",lbl:"Final",t1:bp[sf[0].id]||"TBD",t2:bp[sf[1].id]||"TBD"}
   ];
 
   const rounds=[
@@ -1783,7 +1781,7 @@ function renderBracket(){
     {lbl:"Round of 16",matches:r16},
     {lbl:"Quarter-finals",matches:qf},
     {lbl:"Semi-finals",matches:sf},
-    {lbl:"Final & 3rd place",matches:fin}
+    {lbl:"Final",matches:fin}
   ];
 
   let html="";
