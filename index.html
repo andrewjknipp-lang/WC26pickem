@@ -835,7 +835,9 @@ async function fetchESPNScores(){
       });
       const newResult = {};
       sorted.forEach((t,i)=>newResult[t]=i+1);
-      // Only update if different from current
+      // Only update if different from current AND adminResults not already fully confirmed
+      const allConfirmed = Object.keys(S.adminResults).length === 12;
+      if(allConfirmed) return; // Group stage final — never overwrite with ESPN provisional data
       const cur = JSON.stringify(S.adminResults[grp]||{});
       if(cur !== JSON.stringify(newResult)){
         S.adminResults[grp] = newResult;
@@ -2232,7 +2234,25 @@ async function runSheetRestore() {
 }
 // ── END ONE-TIME SHEET RESTORE ────────────────────────────────
 
+// ── FINAL GROUP RESULTS (locked — do not overwrite) ──────────
+const FINAL_GROUP_RESULTS = {
+  A:{Mexico:1,"South Africa":2,"South Korea":3,Czechia:4},
+  B:{Switzerland:1,Canada:2,"Bosnia-Herzegovina":3,Qatar:4},
+  C:{Brazil:1,Morocco:2,Scotland:3,Haiti:4},
+  D:{"United States":1,Australia:2,Paraguay:3,"Türkiye":4},
+  E:{Germany:1,"Ivory Coast":2,Ecuador:3,"Curaçao":4},
+  F:{Netherlands:1,Japan:2,Sweden:3,Tunisia:4},
+  G:{Belgium:1,Egypt:2,Iran:3,"New Zealand":4},
+  H:{Spain:1,"Cape Verde":2,Uruguay:3,"Saudi Arabia":4},
+  I:{France:1,Norway:2,Senegal:3,Iraq:4},
+  J:{Argentina:1,Austria:2,Algeria:3,Jordan:4},
+  K:{Colombia:1,Portugal:2,"DR Congo":3,Uzbekistan:4},
+  L:{England:1,Croatia:2,Ghana:3,Panama:4},
+};
+
 loadLocal();
+// Always apply final group results — overrides any provisional ESPN data
+S.adminResults = Object.assign({}, FINAL_GROUP_RESULTS);
 S.currentEntry = null; // always start fresh — user must load their entry
 loadRemote().then(()=>{ 
   S.adminUnlocked = false; // lock admin after remote state loads
