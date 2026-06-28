@@ -1763,34 +1763,16 @@ function renderBracket(){
     {id:"r32_16",lbl:"R32 · M87", t1:getSlot(adv,"K",0), t2:"Ghana"},
   ];
 
-  function mkMatch(m1,m2,lbl){
-    return {id:`${m1.id}_v_${m2.id}`,lbl,t1:bp[m1.id]||"TBD",t2:bp[m2.id]||"TBD"};
+  function nextRound(prev, n, lblFn){
+    return Array.from({length:n},(_,i)=>{
+      const m1=prev[i*2], m2=prev[i*2+1];
+      return {id:`${m1.id}_nx${i}`, lbl:lblFn(i), t1:bp[m1.id]||"TBD", t2:bp[m2.id]||"TBD"};
+    });
   }
 
-  // Official FIFA bracket pairings — non-sequential, do not simplify
-  const r16=[
-    mkMatch(r32[0], r32[1],  "R16 · 1"),  // M73 vs M76
-    mkMatch(r32[2], r32[3],  "R16 · 2"),  // M74 vs M75
-    mkMatch(r32[4], r32[5],  "R16 · 3"),  // M78 vs M77
-    mkMatch(r32[6], r32[8],  "R16 · 4"),  // M79 vs M82 (skips r32[7])
-    mkMatch(r32[7], r32[9],  "R16 · 5"),  // M80 vs M81
-    mkMatch(r32[10],r32[11], "R16 · 6"),  // M84 vs M83
-    mkMatch(r32[12],r32[13], "R16 · 7"),  // M85 vs M86
-    mkMatch(r32[14],r32[15], "R16 · 8"),  // M88 vs M87
-  ];
-
-  const qf=[
-    mkMatch(r16[0],r16[1],"QF · 1"),
-    mkMatch(r16[2],r16[3],"QF · 2"),
-    mkMatch(r16[4],r16[5],"QF · 3"),
-    mkMatch(r16[6],r16[7],"QF · 4"),
-  ];
-
-  const sf=[
-    mkMatch(qf[0],qf[1],"SF · 1"),
-    mkMatch(qf[2],qf[3],"SF · 2"),
-  ];
-
+  const r16=nextRound(r32,8,i=>`R16 · ${i+1}`);
+  const qf=nextRound(r16,4,i=>`QF · ${i+1}`);
+  const sf=nextRound(qf,2,i=>`SF · ${i+1}`);
   const fin=[
     {id:"final",lbl:"Final",t1:bp[sf[0].id]||"TBD",t2:bp[sf[1].id]||"TBD"}
   ];
