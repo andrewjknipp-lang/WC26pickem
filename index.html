@@ -460,7 +460,7 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
       <div class="form-group">
         <label class="form-label">Your entry name</label>
-        <select id="regEntrySelect" onchange="document.getElementById('regEntry').value=this.value" style="width:100%;padding:8px;background:#111;color:#fff;border:1px solid #444;border-radius:6px;font-size:14px;margin-bottom:6px">
+        <select id="regEntrySelect" onchange="document.getElementById('regEntry').value=this.value; var e=S.entries[this.value]; if(e) document.getElementById('regName').value=e.name||'';" style="width:100%;padding:8px;background:#111;color:#fff;border:1px solid #444;border-radius:6px;font-size:14px;margin-bottom:6px">
           <option value="">— select your entry —</option>
         </select>
         <input type="text" id="regEntry" placeholder="or type your entry name" style="width:100%;font-size:12px;opacity:.7" />
