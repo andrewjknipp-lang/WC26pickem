@@ -2190,6 +2190,11 @@ loadRemote().then(()=>{
       <label style="font-size:13px;color:var(--text2,#aaa)">Total Goals Tiebreaker</label><br>
       <input id="editGoalsInput" type="number" min="0" style="width:80px;margin-top:4px;padding:6px;border-radius:6px;border:1px solid #444;background:#111;color:#fff;font-size:14px;">
     </div>
+    <div id="editPinRow" style="margin-bottom:16px;display:none;background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);border-radius:8px;padding:12px;">
+      <label style="font-size:13px;color:#f87171;font-weight:600">⚠ No PIN set — assign a temporary PIN</label><br>
+      <p style="font-size:12px;color:var(--text2,#aaa);margin:4px 0 8px">Set a 4-digit PIN so this user can log in. Tell them their temp PIN and ask them to re-register with a new one (re-registering never touches picks).</p>
+      <input id="editPinInput" type="text" maxlength="4" placeholder="4-digit PIN" style="width:80px;padding:6px;border-radius:6px;border:1px solid #444;background:#111;color:#fff;font-size:14px;letter-spacing:4px;">
+    </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
       <button onclick="saveEditEntry()" style="background:var(--gold,#e6a817);color:#000;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">💾 Save Changes</button>
       <button onclick="closeEditEntry()" style="background:#444;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;">Cancel</button>
@@ -2210,6 +2215,17 @@ function openEditEntry(k) {
     "Entry: " + k + " | Name: " + (e.name || "") + " | " + (e.entryName || "");
   document.getElementById("editGoalsInput").value = e.goals || "";
   document.getElementById("editSaveMsg").textContent = "";
+
+  // Show PIN reset row only for entries with no pinHash
+  const pinRow = document.getElementById("editPinRow");
+  const pinInput = document.getElementById("editPinInput");
+  if (!e.pinHash) {
+    pinRow.style.display = "block";
+    pinInput.value = "";
+  } else {
+    pinRow.style.display = "none";
+    pinInput.value = "";
+  }
 
   // Build group ranking selects — one per group
   const grid = document.getElementById("editGroupsGrid");
@@ -2296,9 +2312,16 @@ async function saveEditEntry() {
     return;
   }
 
-  // Step 3: Patch ONLY this entry's groupPicks and goals
+  // Step 3: Patch ONLY this entry's groupPicks and goals (and pinHash if being set)
   S.entries[k].groupPicks = newGroupPicks;
   S.entries[k].goals = goalsVal;
+
+  // If a temp PIN was provided, hash and save it
+  const pinInput = document.getElementById("editPinInput");
+  const pinVal = pinInput ? pinInput.value.trim() : "";
+  if (pinVal && /^\d{4}$/.test(pinVal)) {
+    S.entries[k].pinHash = hashPin(pinVal);
+  }
 
   // Step 4: Push (pushRemote re-fetches remote again before saving — double protection)
   await pushRemote();
