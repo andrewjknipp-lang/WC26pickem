@@ -390,7 +390,7 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
   <div class="header-inner">
     <div class="header-logo"><div class="logo-main">1 World, 1 Cup</div><div class="logo-sub">2026 Pick'em</div></div>
     <div class="header-tabs">
-      <button class="htab active" onclick="showTab('register')">Register</button>
+      <button class="htab active" onclick="showTab('register')">My Entry</button>
       <button class="htab" onclick="showTab('groups')">Groups</button>
       <button class="htab" onclick="showTab('bracket')">Bracket</button>
       <button class="htab" onclick="showTab('leaderboard')">Leaderboard</button>
@@ -466,15 +466,9 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
         <option value="">— choose your entry —</option>
       </select>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div class="form-group">
-        <label class="form-label">Your name</label>
-        <input type="text" id="regName" placeholder="e.g. Andrew" style="width:100%" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">New PIN <span style="font-weight:400;text-transform:none;font-size:11px">(4 digits)</span></label>
-        <input type="password" id="regPin" placeholder="1234" maxlength="4" inputmode="numeric" class="pin-input" style="letter-spacing:.15em;width:100%" />
-      </div>
+    <div style="margin-bottom:16px">
+      <label class="form-label">New PIN <span style="font-weight:400;text-transform:none;font-size:11px">(4 digits)</span></label>
+      <input type="password" id="regPin" placeholder="1234" maxlength="4" inputmode="numeric" class="pin-input" style="letter-spacing:.15em;width:120px;margin-top:4px" />
     </div>
     <input type="hidden" id="regEntry" value="" />
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -1494,21 +1488,13 @@ function switchEntry(){
 function pinResetFromDropdown(){
   const sel = document.getElementById('existingEntrySelect');
   const k = sel ? sel.value.trim() : '';
-  const name = document.getElementById('regName').value.trim();
   const pin = document.getElementById('regPin').value.trim();
   const err = document.getElementById('regError');
   const ok = document.getElementById('regStatus');
   err.textContent = ''; ok.textContent = '';
   if(!k){ err.textContent = 'Select your entry.'; return; }
-  if(!name){ err.textContent = 'Enter your name.'; return; }
   if(!pin || !/^\d{4}$/.test(pin)){ err.textContent = 'Enter a 4-digit PIN.'; return; }
-  // Allow reset if no pinHash, otherwise require correct existing PIN
-  if(S.entries[k] && S.entries[k].pinHash && !checkPin(k, pin)){
-    // They entered a new PIN, not their old one — that's fine for a reset
-    // Just set the new PIN directly
-  }
   if(!S.entries[k]){ err.textContent = 'Entry not found.'; return; }
-  S.entries[k].name = name;
   S.entries[k].pinHash = hashPin(pin);
   S.currentEntry = k;
   syncDebounced();
