@@ -1486,7 +1486,9 @@ function registerEntry(){
   if(!entry){ err.textContent="Enter an entry name."; return; }
   if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){ err.textContent="Enter a 4-digit PIN."; return; }
   if(S.entries[entry]){
-    if(!checkPin(entry, pin)){ err.textContent="That entry name is taken — wrong PIN."; return; }
+    // Only block if entry already has a PIN and they got it wrong.
+    // If pinHash is null (lost/reset), allow any PIN to claim it.
+    if(S.entries[entry].pinHash && !checkPin(entry, pin)){ err.textContent="That entry name is taken — wrong PIN."; return; }
   }
   const pinHash = hashPin(pin);
   const isNew = !S.entries[entry];
