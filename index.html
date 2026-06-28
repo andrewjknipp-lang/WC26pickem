@@ -1415,61 +1415,10 @@ function updateEntryBars(){
 // ── REGISTER ──────────────────────────────────────
 
 
-function showExistingEntryPicker(){
-  const picker = document.getElementById('existingEntryPicker');
-  const sel = document.getElementById('existingEntrySelect');
-  // Populate with existing entries
-  const keys = Object.keys(S.entries||{}).sort();
-  sel.innerHTML = '<option value="">— choose your entry —</option>' +
-    keys.map(k => `<option value="${k.replace(/"/g,'&quot;')}">${k} (${S.entries[k].name||''})</option>`).join('');
-  picker.style.display = 'block';
-}
-
-function useExistingEntry(){
-  const sel = document.getElementById('existingEntrySelect');
-  const key = sel.value;
-  if(!key){ alert('Please select an entry.'); return; }
-  document.getElementById('regEntry').value = key;
-  // Pre-fill name if available
-  if(S.entries[key] && S.entries[key].name){
-    document.getElementById('regName').value = S.entries[key].name;
-  }
-  document.getElementById('existingEntryPicker').style.display = 'none';
-  // Focus PIN field
-  document.getElementById('regPin').focus();
-}
-
 function registerEntry(){
-  const name=document.getElementById("regName").value.trim();
-  const entry=document.getElementById("regEntry").value.trim();
-  const pin=document.getElementById("regPin").value.trim();
-  const err=document.getElementById("regError");
-  err.textContent="";
-  if(!name){ err.textContent="Enter your name."; return; }
-  if(!entry){ err.textContent="Enter an entry name."; return; }
-  if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){ err.textContent="Enter a 4-digit PIN."; return; }
-  if(S.entries[entry]){
-    // Only block if entry already has a PIN and they got it wrong.
-    // If pinHash is null (lost/reset), allow any PIN to claim it.
-    if(S.entries[entry].pinHash && !checkPin(entry, pin)){ err.textContent="That entry name is taken — wrong PIN."; return; }
-  }
-  const pinHash = hashPin(pin);
-  const isNew = !S.entries[entry];
-  if(isNew){
-    // Brand new entry — initialise with empty picks
-    S.entries[entry] = { name, entryName:entry, goals:null, pinHash, joined:new Date().toLocaleDateString(), groupPicks:{}, bracketPicks:{} };
-  } else {
-    // Existing entry — only update name and pinHash, NEVER touch picks or goals
-    S.entries[entry].name = name;
-    S.entries[entry].pinHash = pinHash;
-  }
-  S.currentEntry=entry;
-  syncDebounced();
-  document.getElementById("regStatus").textContent="Entry created — go make your picks!";
-  setTimeout(()=>document.getElementById("regStatus").textContent="",3000);
-  renderEntryPills(); updateEntryBars();
+  // Legacy stub — registration now handled by pinResetFromDropdown
+  console.log('registerEntry called but not used in current UI');
 }
-
 function switchEntry(){
   const sel = document.getElementById('switchName');
   const k = sel ? sel.value.trim() : '';
