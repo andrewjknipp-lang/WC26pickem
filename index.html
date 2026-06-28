@@ -1345,7 +1345,7 @@ async function loadRemote(){
         const remoteGP = Object.keys(remoteEntries[k].groupPicks||{}).length;
         const remoteBP = Object.keys(remoteEntries[k].bracketPicks||{}).length;
         if(localGP > 0 && remoteGP === 0) S.entries[k].groupPicks = localEntries[k].groupPicks;
-        if(localBP > 0 && remoteBP === 0) S.entries[k].bracketPicks = localEntries[k].bracketPicks;
+        if(localBP > remoteBP) S.entries[k].bracketPicks = localEntries[k].bracketPicks;
         if(localEntries[k].goals && !remoteEntries[k].goals) S.entries[k].goals = localEntries[k].goals;
       });
     }
@@ -1391,7 +1391,7 @@ async function pushRemote(){
         const remoteGP = Object.keys(remoteEntries[k].groupPicks||{}).length;
         const remoteBP = Object.keys(remoteEntries[k].bracketPicks||{}).length;
         if(localGP === 0 && remoteGP > 0) toSave.entries[k].groupPicks = remoteEntries[k].groupPicks;
-        if(localBP === 0 && remoteBP > 0) toSave.entries[k].bracketPicks = remoteEntries[k].bracketPicks;
+        if(remoteBP > localBP) toSave.entries[k].bracketPicks = remoteEntries[k].bracketPicks;
         if(!toSave.entries[k].goals && remoteEntries[k].goals) toSave.entries[k].goals = remoteEntries[k].goals;
       }
     });
