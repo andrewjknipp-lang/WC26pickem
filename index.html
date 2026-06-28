@@ -1976,10 +1976,30 @@ function saveAdminResults(){
 function resetAdminResults(){ if(!confirm("Reset ALL group results? This clears every group standing. Cannot be undone.")) return; loadRemote().then(()=>{ S.adminResults={}; syncDebounced(); }); renderAdminContent(); }
 function deleteEntry(k){
   if(!confirm("Delete entry \"" + k + "\"? Cannot be undone.")) return;
-  loadRemote().then(()=>{
+  // Load fresh remote, delete, then push directly without the re-fetch merge
+  // (pushRemote's safe-merge would restore deleted entries from remote)
+  loadRemote().then(async ()=>{
     delete S.entries[k];
     if(S.currentEntry===k) S.currentEntry=null;
-    syncDebounced(); renderAdminContent(); renderEntryPills(); updateEntryBars();
+    saveLocal();
+    setSyncBar("● saving…","syncing");
+    try {
+      const toSave = JSON.parse(JSON.stringify(S));
+      toSave.adminUnlocked = false;
+      toSave.currentEntry = null;
+      const r = await fetch(NPOINT_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(toSave)
+      });
+      if(!r.ok) throw new Error(r.status);
+      setSyncBar("● live");
+      saveBackup();
+    } catch(e){
+      console.warn("delete push failed:",e);
+      setSyncBar("● offline","error");
+    }
+    renderAdminContent(); renderEntryPills(); updateEntryBars();
   });
 }
 function clearAll(){ if(!confirm("Delete ALL entries? Cannot be undone.")) return; S.entries={}; S.currentEntry=null; syncDebounced(); renderAdminContent(); renderEntryPills(); updateEntryBars(); }
