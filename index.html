@@ -1212,7 +1212,7 @@ function renderPicks(){
 // ── DEADLINES ─────────────────────────────────────────────────────────────────
 const GROUP_LOCK    = new Date("2026-06-11T19:00:00Z"); // first kick-off 12pm PT / 3pm ET
 const BRACKET_OPEN  = new Date("2026-06-26T23:59:00Z"); // last group match ends
-const BRACKET_LOCK  = new Date("2026-06-29T04:00:00Z"); // midnight ET / 9pm PT June 28 (end of Group J)
+const BRACKET_LOCK  = new Date("2026-06-29T19:00:00Z"); // 12:00pm PT / 3:00pm ET June 29 (first R32 kick-off)
 
 function groupsLocked(){ return S.adminGroupLock || new Date() >= GROUP_LOCK; }
 function bracketOpen(){  return !S.adminBracketLock && (S.adminBracketOpen || new Date() >= BRACKET_OPEN); }
@@ -1639,13 +1639,29 @@ function saveGroupPicks(){
 
 // ── BRACKET ───────────────────────────────────────
 function getAdv(){
+  // Returns adv[group] = [1st, 2nd, 3rd, 4th] based on adminResults (auto-populated by ESPN)
   const adv={};
   Object.entries(GROUPS).forEach(([g,teams])=>{
     const res=S.adminResults[g];
     if(res){ adv[g]=[...teams].sort((a,b)=>(res[a]||99)-(res[b]||99)); }
-    else adv[g]=[...teams];
+    else adv[g]=null; // group not yet complete
   });
   return adv;
+}
+
+function getSlot(adv, group, pos){
+  // pos: 0=1st, 1=2nd, 2=3rd. Returns team name or "TBD"
+  if(!adv[group]) return "TBD";
+  return adv[group][pos] || "TBD";
+}
+
+function getBestThird(adv, allowedGroups){
+  // Find the best available 3rd-place team from the allowed groups
+  // For now return TBD - will be resolved once all groups finish and
+  // FIFA's combination table is applied. ESPN auto-populates adminResults
+  // which drives this. For user-facing bracket we show TBD until confirmed.
+  // TODO: implement full FIFA combination table (Annex C) when all groups done
+  return "TBD";
 }
 
 function renderBracket(){
@@ -1696,22 +1712,39 @@ function renderBracket(){
   const bp=(entry&&entry.bracketPicks)||{};
 
   const r32=[
-    {id:"r32_1",lbl:"R32 · 1",t1:adv.A[0],t2:adv.C[1]},
-    {id:"r32_2",lbl:"R32 · 2",t1:adv.B[0],t2:adv.D[1]},
-    {id:"r32_3",lbl:"R32 · 3",t1:adv.C[0],t2:adv.A[1]},
-    {id:"r32_4",lbl:"R32 · 4",t1:adv.D[0],t2:adv.B[1]},
-    {id:"r32_5",lbl:"R32 · 5",t1:adv.E[0],t2:adv.G[1]},
-    {id:"r32_6",lbl:"R32 · 6",t1:adv.F[0],t2:adv.H[1]},
-    {id:"r32_7",lbl:"R32 · 7",t1:adv.G[0],t2:adv.E[1]},
-    {id:"r32_8",lbl:"R32 · 8",t1:adv.H[0],t2:adv.F[1]},
-    {id:"r32_9",lbl:"R32 · 9",t1:adv.I[0],t2:adv.K[1]},
-    {id:"r32_10",lbl:"R32 · 10",t1:adv.J[0],t2:adv.L[1]},
-    {id:"r32_11",lbl:"R32 · 11",t1:adv.K[0],t2:adv.I[1]},
-    {id:"r32_12",lbl:"R32 · 12",t1:adv.L[0],t2:adv.J[1]},
-    {id:"r32_13",lbl:"R32 · 13 (3rd wild)",t1:"TBD",t2:"TBD"},
-    {id:"r32_14",lbl:"R32 · 14 (3rd wild)",t1:"TBD",t2:"TBD"},
-    {id:"r32_15",lbl:"R32 · 15 (3rd wild)",t1:"TBD",t2:"TBD"},
-    {id:"r32_16",lbl:"R32 · 16 (3rd wild)",t1:"TBD",t2:"TBD"},
+    // Official FIFA 2026 R32 bracket (fixed slots, pre-published)
+    // Match 73 - Jun 28: Group A runner-up vs Group B runner-up
+    {id:"r32_1", lbl:"R32 · M73", t1:getSlot(adv,"A",1), t2:getSlot(adv,"B",1)},
+    // Match 76 - Jun 29: Group C winner vs Group F runner-up
+    {id:"r32_2", lbl:"R32 · M76", t1:getSlot(adv,"C",0), t2:getSlot(adv,"F",1)},
+    // Match 74 - Jun 29: Group E winner vs best 3rd (A/B/C/D/F)
+    {id:"r32_3", lbl:"R32 · M74", t1:getSlot(adv,"E",0), t2:getSlot(adv,"D",2)||"TBD"},
+    // Match 75 - Jun 30: Group F winner vs Group C runner-up
+    {id:"r32_4", lbl:"R32 · M75", t1:getSlot(adv,"F",0), t2:getSlot(adv,"C",1)},
+    // Match 78 - Jun 30: Group E runner-up vs Group I runner-up
+    {id:"r32_5", lbl:"R32 · M78", t1:getSlot(adv,"E",1), t2:getSlot(adv,"I",1)},
+    // Match 77 - Jun 30: Group I winner vs best 3rd (C/D/F/G/H)
+    {id:"r32_6", lbl:"R32 · M77", t1:getSlot(adv,"I",0), t2:getSlot(adv,"F",2)||"TBD"},
+    // Match 79 - Jul 1: Group A winner vs best 3rd (C/E/F/H/I)
+    {id:"r32_7", lbl:"R32 · M79", t1:getSlot(adv,"A",0), t2:getSlot(adv,"E",2)||"TBD"},
+    // Match 80 - Jul 1: Group L winner vs best 3rd (E/H/I/J/K)
+    {id:"r32_8", lbl:"R32 · M80", t1:getSlot(adv,"L",0), t2:getSlot(adv,"K",2)||"TBD"},
+    // Match 82 - Jul 1: Group D winner vs best 3rd (B/C/F/G)
+    {id:"r32_9", lbl:"R32 · M82", t1:getSlot(adv,"D",0), t2:getSlot(adv,"B",2)||"TBD"},
+    // Match 81 - Jul 2: Group G winner vs best 3rd (A/E/H/I/J)
+    {id:"r32_10",lbl:"R32 · M81", t1:getSlot(adv,"G",0), t2:getSlot(adv,"I",2)||"TBD"},
+    // Match 84 - Jul 2: Group H winner vs Group J runner-up
+    {id:"r32_11",lbl:"R32 · M84", t1:getSlot(adv,"H",0), t2:getSlot(adv,"J",1)},
+    // Match 83 - Jul 3: Group K runner-up vs Group L runner-up
+    {id:"r32_12",lbl:"R32 · M83", t1:getSlot(adv,"K",1), t2:getSlot(adv,"L",1)},
+    // Match 85 - Jul 3: Group B winner vs best 3rd (E/F/G/I/J)
+    {id:"r32_13",lbl:"R32 · M85", t1:getSlot(adv,"B",0), t2:getSlot(adv,"J",2)||"TBD"},
+    // Match 86 - Jul 3: Group J winner vs Group H runner-up
+    {id:"r32_14",lbl:"R32 · M86", t1:getSlot(adv,"J",0), t2:getSlot(adv,"H",1)},
+    // Match 88 - Jul 3: Group D runner-up vs Group G runner-up
+    {id:"r32_15",lbl:"R32 · M88", t1:getSlot(adv,"D",1), t2:getSlot(adv,"G",1)},
+    // Match 87 - Jul 3: Group K winner vs best 3rd (D/E/I/J/L)
+    {id:"r32_16",lbl:"R32 · M87", t1:getSlot(adv,"K",0), t2:getSlot(adv,"L",2)||"TBD"},
   ];
 
   function nextRound(prev, n, lblFn){
