@@ -1783,8 +1783,8 @@ function renderBracket(){
       const t1tbd=!m.t1||m.t1==="TBD", t2tbd=!m.t2||m.t2==="TBD";
       const esc=s=>s.replace(/'/g,"\\'");
       html+=`<div class="match-card">
-        <div class="match-lbl">${m.lbl}</div>
-        <div class="match-team ${p===m.t1?"picked":""} ${t1tbd?"tbd":""}" onclick="${t1tbd?"":"pickB('"+m.id+"','"+esc(m.t1)+"')"}">
+        <div class="match-lbl">${m.lbl}${LOCKED_MATCHES[m.id]?' <span style="font-size:10px;color:#f87171">🔒 locked</span>':''}</div>
+        <div class="match-team ${p===m.t1?"picked":""} ${t1tbd?"tbd":""} ${LOCKED_MATCHES[m.id]?"locked-match":""}" onclick="${t1tbd||LOCKED_MATCHES[m.id]?"":"pickB('"+m.id+"','"+esc(m.t1)+"')"}">
           <span class="team-flag">${t1tbd?"❓":flag(m.t1)}</span>
           <span class="mt-name">${m.t1||"TBD"}</span>
           ${p===m.t1?"✓":""}
@@ -1802,8 +1802,14 @@ function renderBracket(){
   document.getElementById("bracketContent").innerHTML=html;
 }
 
+// R32 matches locked individually as they kick off (match id → true)
+const LOCKED_MATCHES = {
+  "r32_1": true, // South Africa vs Canada — kicked off Jun 28 12pm PT
+};
+
 function pickB(mid,team){
   if(bracketLocked()){ return; }
+  if(LOCKED_MATCHES[mid]){ alert("This match has already started and can no longer be changed."); return; }
   if(!S.currentEntry){ alert("Register an entry first."); return; }
   S.entries[S.currentEntry].bracketPicks[mid]=team;
   syncDebounced(); renderBracket();
