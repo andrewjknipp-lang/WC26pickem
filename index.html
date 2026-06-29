@@ -1431,7 +1431,7 @@ function renderPicks(){
 // ── DEADLINES ─────────────────────────────────────────────────────────────────
 const GROUP_LOCK    = new Date("2026-06-11T19:00:00Z"); // first kick-off 12pm PT / 3pm ET
 const BRACKET_OPEN  = new Date("2026-06-26T23:59:00Z"); // last group match ends
-const BRACKET_LOCK  = new Date("2026-06-29T23:45:00Z"); // locked Jun 29 4:45pm PT
+const BRACKET_LOCK  = new Date("2026-06-29T23:38:00Z"); // locked Jun 29 4:38pm PT
 
 function groupsLocked(){ return S.adminGroupLock || new Date() >= GROUP_LOCK; }
 function bracketOpen(){  return !S.adminBracketLock && (S.adminBracketOpen || new Date() >= BRACKET_OPEN); }
