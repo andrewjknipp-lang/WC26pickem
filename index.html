@@ -920,9 +920,11 @@ async function fetchESPNScores(){
     }
 
     updateLiveUI();
-    // Re-render leaderboard live if it's the active tab
+    // Re-render active tabs with updated bracket results
     const lbTab = document.getElementById("leaderboard");
-    if(lbTab && lbTab.style.display !== "none") renderLeaderboard();
+    if(lbTab && lbTab.classList.contains("active")) renderLeaderboard();
+    const brTab = document.getElementById("bracket");
+    if(brTab && brTab.classList.contains("active")) renderBracket();
   } catch(e){ console.warn("ESPN fetch failed:", e); }
 }
 
@@ -2592,6 +2594,8 @@ const FINAL_GROUP_RESULTS = {
   K:{Colombia:1,Portugal:2,"DR Congo":3,Uzbekistan:4},
   L:{England:1,Croatia:2,Ghana:3,Panama:4},
 };
+
+window.bracketResults = {};
 
 loadLocal();
 S.currentEntry = null; // always start fresh — user must load their entry
