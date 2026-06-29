@@ -600,6 +600,10 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 <div id="picks" class="section">
   <p class="page-title">📊 All Picks</p>
   <p class="page-sub">Every entry's selections — revealed at kickoff.</p>
+  <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
+    <button id="picksToggleGroup" class="btn btn-gold" onclick="setPicksView('group')" style="font-size:13px;padding:6px 16px">⚽ Group Picks</button>
+    <button id="picksToggleBracket" class="btn" onclick="setPicksView('bracket')" style="font-size:13px;padding:6px 16px">🏆 Bracket Picks</button>
+  </div>
   <div id="picksContent"></div>
 </div>
 
@@ -1053,7 +1057,207 @@ function restoreBackup(idx){
 
 
 // ── PICKS TAB ─────────────────────────────────────────────────────────────────
+let currentPicksView = 'group';
+
+function setPicksView(view){
+  currentPicksView = view;
+  const gBtn = document.getElementById('picksToggleGroup');
+  const bBtn = document.getElementById('picksToggleBracket');
+  if(gBtn) gBtn.className = view==='group' ? 'btn btn-gold' : 'btn';
+  if(bBtn) bBtn.className = view==='bracket' ? 'btn btn-gold' : 'btn';
+  renderPicks();
+}
+
+function renderBracketPicks(){
+  const el = document.getElementById('picksContent');
+  if(!el) return;
+  const entries = S.entries || {};
+  const entryKeys = Object.keys(entries).sort();
+  if(!entryKeys.length){ el.innerHTML='<p style="color:var(--text2);padding:2rem">No entries yet.</p>'; return; }
+
+  // Build bracket structure (same as renderBracket but for all entries)
+  const adv = getAdv();
+  function gs(g,p){ if(!adv[g]) return 'TBD'; return adv[g][p]||'TBD'; }
+
+  const R32 = [
+    {id:'r32_3', t1:gs('E',0), t2:'Paraguay'},
+    {id:'r32_6', t1:gs('I',0), t2:'Sweden'},
+    {id:'r32_1', t1:gs('A',1), t2:gs('B',1)},
+    {id:'r32_4', t1:gs('F',0), t2:gs('C',1)},
+    {id:'r32_12',t1:gs('K',1), t2:gs('L',1)},
+    {id:'r32_11',t1:gs('H',0), t2:gs('J',1)},
+    {id:'r32_9', t1:gs('D',0), t2:'Bosnia-Herzegovina'},
+    {id:'r32_10',t1:gs('G',0), t2:'Senegal'},
+    {id:'r32_2', t1:gs('C',0), t2:gs('F',1)},
+    {id:'r32_5', t1:gs('E',1), t2:gs('I',1)},
+    {id:'r32_7', t1:gs('A',0), t2:'Ecuador'},
+    {id:'r32_8', t1:gs('L',0), t2:'DR Congo'},
+    {id:'r32_14',t1:gs('J',0), t2:gs('H',1)},
+    {id:'r32_15',t1:gs('D',1), t2:gs('G',1)},
+    {id:'r32_13',t1:gs('B',0), t2:'Algeria'},
+    {id:'r32_16',t1:gs('K',0), t2:'Ghana'},
+  ];
+
+  function nextIds(prev, n){
+    return Array.from({length:n},(_,i)=>({id:`${prev[i*2].id}_nx${i}`, t1:'?', t2:'?'}));
+  }
+  const R16 = nextIds(R32,8);
+  const QF  = nextIds(R16,4);
+  const SF  = nextIds(QF,2);
+  const FIN = [{id:'final'}];
+  const allRounds = [
+    {lbl:'R32', matches:R32},
+    {lbl:'R16', matches:R16},
+    {lbl:'QF',  matches:QF},
+    {lbl:'SF',  matches:SF},
+    {lbl:'Final',matches:FIN},
+  ];
+
+  const ROUND_PTS = {R32:1, R16:2, QF:4, SF:8, Final:16};
+
+  let html = '';
+
+  // ── SECTION 1: Champion picks ──────────────────────────────
+  html += `<div class="picks-section-title">🏆 Champion Picks <span class="picks-sub-title">${entryKeys.length} entries</span></div>`;
+  const champTally = {};
+  entryKeys.forEach(k => {
+    const champ = (entries[k].bracketPicks||{})['final'] || null;
+    if(champ) champTally[champ] = (champTally[champ]||0) + 1;
+  });
+  const champSorted = Object.entries(champTally).sort((a,b)=>b[1]-a[1]);
+  const maxChamp = champSorted[0]?.[1]||1;
+  html += '<div class="summary-grid" style="margin-bottom:1.5rem">';
+  html += '<div class="summary-card"><div class="summary-card-title">Who picked to win it all</div>';
+  if(champSorted.length){
+    champSorted.forEach(([team,count])=>{
+      const pct = Math.round((count/maxChamp)*100);
+      html += `<div class="bar-row">
+        <div class="bar-label">${flag(team)} ${team}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+        <div class="bar-count">${count}</div>
+      </div>`;
+    });
+  } else {
+    html += '<p style="font-size:12px;color:var(--text2)">No bracket picks submitted yet.</p>';
+  }
+  html += '</div>';
+
+  // Champion by entry
+  html += '<div class="summary-card"><div class="summary-card-title">Each entry\'s champion pick</div>';
+  entryKeys.forEach(k => {
+    const champ = (entries[k].bracketPicks||{})['final'] || '—';
+    html += `<div class="bar-row">
+      <div class="bar-label" style="min-width:140px">${k}</div>
+      <div style="font-size:12px;color:var(--text)">${champ !== '—' ? flag(champ)+' '+champ : '<span style="color:var(--text2)">not picked</span>'}</div>
+    </div>`;
+  });
+  html += '</div></div>';
+
+  // ── SECTION 2: Round-by-round table ───────────────────────
+  html += `<div class="picks-section-title" style="margin-top:1.5rem">📋 Round-by-Round Picks</div>`;
+
+  allRounds.forEach(({lbl, matches}) => {
+    const pts = ROUND_PTS[lbl];
+    html += `<div style="margin-bottom:1.5rem">
+      <div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:.5rem">${lbl} <span style="color:var(--text2);font-weight:400;font-size:11px">${pts} pt${pts>1?'s':''} each</span></div>
+      <div style="overflow-x:auto">
+      <table class="picks-table" style="min-width:600px">
+        <tr>
+          <th style="text-align:left;min-width:120px">Entry</th>`;
+    matches.forEach((m,i) => {
+      const matchup = R32[i*2] && R32[i*2+1]
+        ? `${R32[i*2]?.t1||'?'} vs ${R32[i*2+1]?.t2||'?'}`
+        : m.id;
+      // For R32, show actual teams. For later rounds show match number
+      if(lbl==='R32'){
+        html += `<th style="text-align:center;font-size:10px;font-weight:400;max-width:70px">${m.t1}<br>vs<br>${m.t2}</th>`;
+      } else {
+        html += `<th style="text-align:center;font-size:10px;font-weight:400">${lbl} ${i+1}</th>`;
+      }
+    });
+    html += '</tr>';
+
+    entryKeys.forEach(k => {
+      const bp = entries[k].bracketPicks || {};
+      html += `<tr><td style="color:var(--text2);font-size:11px;white-space:nowrap">${k}</td>`;
+      matches.forEach(m => {
+        const pick = bp[m.id] || '—';
+        const hasPick = pick !== '—';
+        html += `<td style="text-align:center;font-size:11px;padding:3px 2px">
+          ${hasPick ? `<span title="${pick}">${flag(pick)} ${pick.length>8?pick.slice(0,8)+'…':pick}</span>` : '<span style="color:var(--text2)">—</span>'}
+        </td>`;
+      });
+      html += '</tr>';
+    });
+
+    // Consensus row
+    html += `<tr style="background:rgba(240,192,64,0.08)"><td style="font-size:10px;color:var(--gold);font-weight:600">Most picked</td>`;
+    matches.forEach(m => {
+      const tally = {};
+      entryKeys.forEach(k => {
+        const p = (entries[k].bracketPicks||{})[m.id];
+        if(p) tally[p] = (tally[p]||0)+1;
+      });
+      const top = Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
+      html += `<td style="text-align:center;font-size:10px;color:var(--gold)">${top ? `${flag(top[0])} ${top[0].length>6?top[0].slice(0,6)+'…':top[0]} (${top[1]})` : '—'}</td>`;
+    });
+    html += '</tr></table></div></div>';
+  });
+
+  // ── SECTION 3: Consensus heatmap ──────────────────────────
+  html += `<div class="picks-section-title" style="margin-top:.5rem">🌡️ Consensus by Round</div>`;
+  html += '<div class="summary-grid">';
+  allRounds.forEach(({lbl, matches}) => {
+    const tally = {};
+    entryKeys.forEach(k => {
+      matches.forEach(m => {
+        const p = (entries[k].bracketPicks||{})[m.id];
+        if(p) tally[p] = (tally[p]||0)+1;
+      });
+    });
+    const sorted = Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const maxV = sorted[0]?.[1]||1;
+    html += `<div class="summary-card"><div class="summary-card-title">${lbl} — Most Picked Teams</div>`;
+    if(sorted.length){
+      sorted.forEach(([team,count])=>{
+        const pct = Math.round((count/maxV)*100);
+        html += `<div class="bar-row">
+          <div class="bar-label">${flag(team)} ${team}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <div class="bar-count">${count}</div>
+        </div>`;
+      });
+    } else {
+      html += '<p style="font-size:12px;color:var(--text2)">No picks yet.</p>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // ── SECTION 4: Full bracket per entry ─────────────────────
+  html += `<div class="picks-section-title" style="margin-top:1.5rem">📁 Full Bracket Per Entry</div>`;
+  entryKeys.forEach(k => {
+    const bp = entries[k].bracketPicks || {};
+    const pickCount = Object.keys(bp).length;
+    html += `<details style="margin-bottom:8px;background:var(--surface);border:0.5px solid var(--border2);border-radius:8px;padding:10px 14px">
+      <summary style="cursor:pointer;font-weight:600;font-size:13px;color:var(--text)">${k} <span style="color:var(--text2);font-weight:400">(${entries[k].name}) — ${pickCount}/31 picks</span></summary>
+      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">`;
+    allRounds.forEach(({lbl, matches}) => {
+      html += `<div style="min-width:120px"><div style="font-size:10px;font-weight:600;color:var(--gold);margin-bottom:4px">${lbl}</div>`;
+      matches.forEach(m => {
+        const pick = bp[m.id];
+        html += `<div style="font-size:11px;color:${pick?'var(--text)':'var(--text2)'};padding:1px 0">${pick ? flag(pick)+' '+pick : '—'}</div>`;
+      });
+      html += '</div>';
+    });
+    html += '</div></details>';
+  });
+
+  el.innerHTML = html;
+}
+
 function renderPicks(){
+  if(currentPicksView === 'bracket'){ renderBracketPicks(); return; }
   const el = document.getElementById("picksContent");
   if(!el) return;
 
