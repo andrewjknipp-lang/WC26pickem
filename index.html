@@ -602,7 +602,7 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
   <p class="page-sub">Every entry's selections — revealed at kickoff.</p>
   <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
     <button id="picksToggleGroup" class="btn btn-gold" onclick="setPicksView('group')" style="font-size:13px;padding:6px 16px">⚽ Group Picks</button>
-    <button id="picksToggleBracket" class="btn" onclick="setPicksView('bracket')" style="font-size:13px;padding:6px 16px">🏆 Bracket Picks</button>
+    <button id="picksToggleBracket" class="btn" onclick="setPicksView('bracket')" style="font-size:13px;padding:6px 16px;display:none">🏆 Bracket Picks</button>
   </div>
   <div id="picksContent"></div>
 </div>
@@ -1261,6 +1261,16 @@ function renderBracketPicks(){
 }
 
 function renderPicks(){
+  // Show/hide bracket picks button based on lock state
+  const bBtn = document.getElementById('picksToggleBracket');
+  if(bBtn) bBtn.style.display = bracketLocked() ? 'inline-block' : 'none';
+  // If bracket not locked and user is on bracket view, reset to group
+  if(!bracketLocked() && currentPicksView === 'bracket'){
+    currentPicksView = 'group';
+    const gBtn = document.getElementById('picksToggleGroup');
+    if(gBtn) gBtn.className = 'btn btn-gold';
+    if(bBtn) bBtn.className = 'btn';
+  }
   if(currentPicksView === 'bracket'){ renderBracketPicks(); return; }
   const el = document.getElementById("picksContent");
   if(!el) return;
@@ -1421,7 +1431,7 @@ function renderPicks(){
 // ── DEADLINES ─────────────────────────────────────────────────────────────────
 const GROUP_LOCK    = new Date("2026-06-11T19:00:00Z"); // first kick-off 12pm PT / 3pm ET
 const BRACKET_OPEN  = new Date("2026-06-26T23:59:00Z"); // last group match ends
-const BRACKET_LOCK  = new Date("2026-06-29T17:00:00Z"); // 10:00am PT June 29 — first R32 kickoff
+const BRACKET_LOCK  = new Date("2026-06-30T17:00:00Z"); // 10:00am PT June 30 — first R32 kickoff tomorrow
 
 function groupsLocked(){ return S.adminGroupLock || new Date() >= GROUP_LOCK; }
 function bracketOpen(){  return !S.adminBracketLock && (S.adminBracketOpen || new Date() >= BRACKET_OPEN); }
@@ -2012,7 +2022,10 @@ function renderBracket(){
 
 // R32 matches locked individually as they kick off (match id → true)
 const LOCKED_MATCHES = {
-  "r32_1": true, // South Africa vs Canada — kicked off Jun 28 12pm PT
+  "r32_1": true, // South Africa vs Canada — Jun 28
+  "r32_2": true, // Brazil vs Japan — Jun 29 10am PT
+  "r32_3": true, // Germany vs Paraguay — Jun 29 1:30pm PT
+  "r32_4": true, // Netherlands vs Morocco — Jun 29 6pm PT
 };
 
 function pickB(mid,team){
