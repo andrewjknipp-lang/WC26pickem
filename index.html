@@ -671,6 +671,10 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
       <p style="font-size:12px;color:var(--text2);margin-bottom:.75rem">Restores all <strong>17 entries</strong> from the Jun 12 locked sheet. Writes groupPicks, goals, name for every entry. bracketPicks and pinHash are preserved for existing entries. Shows a full diff before writing.</p>
       <button id="sheetRestoreBtn" class="btn" onclick="runSheetRestore()" style="background:#b45309;color:#fff">🔧 Run Full Restore</button>
       <span id="sheetRestoreStatus" style="font-size:12px;margin-left:10px"></span>
+      <hr style="margin:12px 0;border-color:#333">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px"><strong>Admin bracket pick override:</strong> Set Theodore (Steve) R32 pick to Canada</p>
+      <button class="btn" onclick="patchTheodoreCanada()" style="background:#2563eb;color:#fff;font-size:12px;padding:6px 14px">Set Theodore → Canada (R32)</button>
+      <span id="theodorePatchStatus" style="font-size:12px;margin-left:10px"></span>
     </div>
     </div>
   </div>
@@ -2441,6 +2445,36 @@ async function runSheetRestore() {
   }
 
   btn.disabled = false;
+}
+async function patchTheodoreCanada(){
+  const statusEl = document.getElementById('theodorePatchStatus');
+  statusEl.textContent = 'Fetching…';
+  let fresh;
+  try {
+    const r = await fetch(NPOINT_URL, {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    fresh = await r.json();
+  } catch(e){ statusEl.textContent = '✗ '+e.message; return; }
+  if(!fresh.entries || !fresh.entries['Theodore']){
+    statusEl.textContent = '✗ Theodore entry not found'; return;
+  }
+  if(!fresh.entries['Theodore'].bracketPicks) fresh.entries['Theodore'].bracketPicks = {};
+  const before = fresh.entries['Theodore'].bracketPicks['r32_1'];
+  fresh.entries['Theodore'].bracketPicks['r32_1'] = 'Canada';
+  if(!confirm('Change Theodore R32 pick from "'+before+'" to "Canada"?\n\nNo other picks will be affected.')){
+    statusEl.textContent = 'Cancelled.'; return;
+  }
+  try {
+    const r2 = await fetch(NPOINT_URL, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fresh)});
+    if(!r2.ok) throw new Error('HTTP '+r2.status);
+    statusEl.style.color='#4ade80';
+    statusEl.textContent = '✓ Done — Theodore now has Canada for R32';
+    if(S.entries['Theodore']){
+      if(!S.entries['Theodore'].bracketPicks) S.entries['Theodore'].bracketPicks={};
+      S.entries['Theodore'].bracketPicks['r32_1']='Canada';
+      saveLocal();
+    }
+  } catch(e){ statusEl.textContent = '✗ POST failed: '+e.message; }
 }
 // ── END ONE-TIME SHEET RESTORE ────────────────────────────────
 
