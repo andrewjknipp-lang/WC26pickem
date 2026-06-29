@@ -742,7 +742,7 @@ let espnPollTimer = null;
 
 async function fetchESPNScores(){
   try {
-    const r = await fetch(ESPN_API + "?limit=200&dates=20260611-20260628");
+    const r = await fetch(ESPN_API + "?limit=200&dates=20260611-20260719");
     if(!r.ok) return;
     const data = await r.json();
     const events = data.events || [];
@@ -862,6 +862,57 @@ async function fetchESPNScores(){
       S.adminBracketOpen = true;
       changed = true;
       syncDebounced();
+    }
+
+    // ── BRACKET RESULTS from ESPN knockout matches ────────────────
+    // Build map of r32 match teams so we can identify winners
+    // We use the same adv/getSlot logic but inline here for scoring
+    const bracketMatchups = [
+      {id:"r32_3",  t1:FINAL_GROUP_RESULTS.E?Object.keys(FINAL_GROUP_RESULTS.E).find(k=>FINAL_GROUP_RESULTS.E[k]===1):"Germany",         t2:"Paraguay"},
+      {id:"r32_6",  t1:FINAL_GROUP_RESULTS.I?Object.keys(FINAL_GROUP_RESULTS.I).find(k=>FINAL_GROUP_RESULTS.I[k]===1):"France",           t2:"Sweden"},
+      {id:"r32_1",  t1:FINAL_GROUP_RESULTS.A?Object.keys(FINAL_GROUP_RESULTS.A).find(k=>FINAL_GROUP_RESULTS.A[k]===2):"South Africa",     t2:FINAL_GROUP_RESULTS.B?Object.keys(FINAL_GROUP_RESULTS.B).find(k=>FINAL_GROUP_RESULTS.B[k]===2):"Canada"},
+      {id:"r32_4",  t1:FINAL_GROUP_RESULTS.F?Object.keys(FINAL_GROUP_RESULTS.F).find(k=>FINAL_GROUP_RESULTS.F[k]===1):"Netherlands",      t2:FINAL_GROUP_RESULTS.C?Object.keys(FINAL_GROUP_RESULTS.C).find(k=>FINAL_GROUP_RESULTS.C[k]===2):"Morocco"},
+      {id:"r32_12", t1:FINAL_GROUP_RESULTS.K?Object.keys(FINAL_GROUP_RESULTS.K).find(k=>FINAL_GROUP_RESULTS.K[k]===2):"Portugal",         t2:FINAL_GROUP_RESULTS.L?Object.keys(FINAL_GROUP_RESULTS.L).find(k=>FINAL_GROUP_RESULTS.L[k]===2):"Croatia"},
+      {id:"r32_11", t1:FINAL_GROUP_RESULTS.H?Object.keys(FINAL_GROUP_RESULTS.H).find(k=>FINAL_GROUP_RESULTS.H[k]===1):"Spain",            t2:FINAL_GROUP_RESULTS.J?Object.keys(FINAL_GROUP_RESULTS.J).find(k=>FINAL_GROUP_RESULTS.J[k]===2):"Austria"},
+      {id:"r32_9",  t1:FINAL_GROUP_RESULTS.D?Object.keys(FINAL_GROUP_RESULTS.D).find(k=>FINAL_GROUP_RESULTS.D[k]===1):"United States",    t2:"Bosnia-Herzegovina"},
+      {id:"r32_10", t1:FINAL_GROUP_RESULTS.G?Object.keys(FINAL_GROUP_RESULTS.G).find(k=>FINAL_GROUP_RESULTS.G[k]===1):"Belgium",          t2:"Senegal"},
+      {id:"r32_2",  t1:FINAL_GROUP_RESULTS.C?Object.keys(FINAL_GROUP_RESULTS.C).find(k=>FINAL_GROUP_RESULTS.C[k]===1):"Brazil",           t2:FINAL_GROUP_RESULTS.F?Object.keys(FINAL_GROUP_RESULTS.F).find(k=>FINAL_GROUP_RESULTS.F[k]===2):"Japan"},
+      {id:"r32_5",  t1:FINAL_GROUP_RESULTS.E?Object.keys(FINAL_GROUP_RESULTS.E).find(k=>FINAL_GROUP_RESULTS.E[k]===2):"Ivory Coast",      t2:FINAL_GROUP_RESULTS.I?Object.keys(FINAL_GROUP_RESULTS.I).find(k=>FINAL_GROUP_RESULTS.I[k]===2):"Norway"},
+      {id:"r32_7",  t1:FINAL_GROUP_RESULTS.A?Object.keys(FINAL_GROUP_RESULTS.A).find(k=>FINAL_GROUP_RESULTS.A[k]===1):"Mexico",           t2:"Ecuador"},
+      {id:"r32_8",  t1:FINAL_GROUP_RESULTS.L?Object.keys(FINAL_GROUP_RESULTS.L).find(k=>FINAL_GROUP_RESULTS.L[k]===1):"England",          t2:"DR Congo"},
+      {id:"r32_14", t1:FINAL_GROUP_RESULTS.J?Object.keys(FINAL_GROUP_RESULTS.J).find(k=>FINAL_GROUP_RESULTS.J[k]===1):"Argentina",        t2:FINAL_GROUP_RESULTS.H?Object.keys(FINAL_GROUP_RESULTS.H).find(k=>FINAL_GROUP_RESULTS.H[k]===2):"Cape Verde"},
+      {id:"r32_15", t1:FINAL_GROUP_RESULTS.D?Object.keys(FINAL_GROUP_RESULTS.D).find(k=>FINAL_GROUP_RESULTS.D[k]===2):"Australia",        t2:FINAL_GROUP_RESULTS.G?Object.keys(FINAL_GROUP_RESULTS.G).find(k=>FINAL_GROUP_RESULTS.G[k]===2):"Egypt"},
+      {id:"r32_13", t1:FINAL_GROUP_RESULTS.B?Object.keys(FINAL_GROUP_RESULTS.B).find(k=>FINAL_GROUP_RESULTS.B[k]===1):"Switzerland",      t2:"Algeria"},
+      {id:"r32_16", t1:FINAL_GROUP_RESULTS.K?Object.keys(FINAL_GROUP_RESULTS.K).find(k=>FINAL_GROUP_RESULTS.K[k]===1):"Colombia",         t2:"Ghana"},
+    ];
+
+    // Match ESPN completed knockout results to bracket match IDs
+    const newBracketResults = {};
+    for(const ev of events){
+      const comp = ev.competitions&&ev.competitions[0];
+      if(!comp) continue;
+      const comps = comp.competitors||[];
+      if(comps.length<2) continue;
+      const isFinal = ev.status?.type?.name==="STATUS_FINAL"||ev.status?.type?.name==="STATUS_FULL_TIME";
+      if(!isFinal) continue;
+      const home = comps.find(c=>c.homeAway==="home")||comps[0];
+      const away = comps.find(c=>c.homeAway==="away")||comps[1];
+      const homeName = normalizeTeam(home.team.displayName||home.team.name);
+      const awayName = normalizeTeam(away.team.displayName||away.team.name);
+      const homeScore = parseInt(home.score)||0;
+      const awayScore = parseInt(away.score)||0;
+      if(homeScore===awayScore) continue; // skip draws (shouldn't happen in KO)
+      const winner = homeScore>awayScore ? homeName : awayName;
+      // Find matching bracket match
+      const match = bracketMatchups.find(m=>
+        (m.t1===homeName||m.t1===awayName) && (m.t2===homeName||m.t2===awayName)
+      );
+      if(match) newBracketResults[match.id] = winner;
+    }
+
+    // Store bracket results globally if any found
+    if(Object.keys(newBracketResults).length > 0){
+      window.bracketResults = Object.assign(window.bracketResults||{}, newBracketResults);
     }
 
     updateLiveUI();
@@ -2084,8 +2135,27 @@ function renderLeaderboard(){
     });
     const groupCount = Object.keys(e.groupPicks||{}).length;
     const bracketCount = Object.keys(e.bracketPicks||{}).length;
+
+    // Bracket scoring: score picks against window.bracketResults
+    let bp = 0;
+    const br = window.bracketResults || {};
+    const bp_picks = e.bracketPicks || {};
+
+    // R32 IDs and their point values
+    const new_r32 = ['r32_3','r32_6','r32_1','r32_4','r32_12','r32_11','r32_9','r32_10',
+                     'r32_2','r32_5','r32_7','r32_8','r32_14','r32_15','r32_13','r32_16'];
+    const new_r16 = new_r32.map((id,i)=> i%2===0 ? `${id}_nx${i/2}` : null).filter(Boolean);
+    const new_qf  = new_r16.map((id,i)=> i%2===0 ? `${id}_nx${i/2}` : null).filter(Boolean);
+    const new_sf  = new_qf.map((id,i)=>  i%2===0 ? `${id}_nx${i/2}` : null).filter(Boolean);
+
+    new_r32.forEach(id => { if(br[id] && bp_picks[id]===br[id]) bp+=1; });
+    new_r16.forEach(id => { if(br[id] && bp_picks[id]===br[id]) bp+=2; });
+    new_qf.forEach(id  => { if(br[id] && bp_picks[id]===br[id]) bp+=4; });
+    new_sf.forEach(id  => { if(br[id] && bp_picks[id]===br[id]) bp+=8; });
+    if(br['final'] && bp_picks['final']===br['final']) bp+=16;
+
     const diff=actual!=null?Math.abs(e.goals-actual):null;
-    return {name:e.name,entry:k,gp,bp:0,total:gp,guess:e.goals,diff,groupCount,bracketCount};
+    return {name:e.name,entry:k,gp,bp,total:gp+bp,guess:e.goals,diff,groupCount,bracketCount};
   }).sort((a,b)=>{
     if(b.total!==a.total) return b.total-a.total;
     if(a.diff!=null&&b.diff!=null) return a.diff-b.diff;
