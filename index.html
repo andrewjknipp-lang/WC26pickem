@@ -906,12 +906,16 @@ async function fetchESPNScores(){
       const homeScore = parseInt(home.score)||0;
       const awayScore = parseInt(away.score)||0;
       if(homeScore===awayScore && ev.status?.type?.name!=="STATUS_FINAL_PEN" && ev.status?.type?.name!=="STATUS_FINAL_AET") continue;
-      // Determine winner — for PEN/AET use ESPN winner flag (bool or string), fallback to score
+      // Determine winner — try winner flag, then shootout score, then regular score
       let winner;
-      const homeWinner = home.winner===true || home.winner==="true";
-      const awayWinner = away.winner===true || away.winner==="true";
+      const homeWinner = home.winner===true || home.winner==="true" || home.winner===1;
+      const awayWinner = away.winner===true || away.winner==="true" || away.winner===1;
+      const homePenScore = parseInt(home.shootoutScore||home.shootout?.score||"-1");
+      const awayPenScore = parseInt(away.shootoutScore||away.shootout?.score||"-1");
       if(homeWinner) winner = homeName;
       else if(awayWinner) winner = awayName;
+      else if(homePenScore > awayPenScore) winner = homeName;
+      else if(awayPenScore > homePenScore) winner = awayName;
       else if(homeScore > awayScore) winner = homeName;
       else if(awayScore > homeScore) winner = awayName;
       else continue; // genuine draw, skip
@@ -919,7 +923,6 @@ async function fetchESPNScores(){
       const match = bracketMatchups.find(m=>
         (m.t1===homeName||m.t1===awayName) && (m.t2===homeName||m.t2===awayName)
       );
-      console.log('[BR]', homeName, 'vs', awayName, '→ winner:', winner, '| match found:', match?match.id:'NONE', '| homeWinner:', home.winner, 'awayWinner:', away.winner);
       if(match) newBracketResults[match.id] = winner;
     }
 
