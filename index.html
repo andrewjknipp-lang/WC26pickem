@@ -897,7 +897,7 @@ async function fetchESPNScores(){
       if(!comp) continue;
       const comps = comp.competitors||[];
       if(comps.length<2) continue;
-      const isFinal = ev.status?.type?.name==="STATUS_FINAL"||ev.status?.type?.name==="STATUS_FULL_TIME";
+      const isFinal = ev.status?.type?.name==="STATUS_FINAL"||ev.status?.type?.name==="STATUS_FULL_TIME"||ev.status?.type?.name==="STATUS_FINAL_PEN"||ev.status?.type?.name==="STATUS_FINAL_AET";
       if(!isFinal) continue;
       const home = comps.find(c=>c.homeAway==="home")||comps[0];
       const away = comps.find(c=>c.homeAway==="away")||comps[1];
@@ -905,8 +905,16 @@ async function fetchESPNScores(){
       const awayName = normalizeTeam(away.team.displayName||away.team.name);
       const homeScore = parseInt(home.score)||0;
       const awayScore = parseInt(away.score)||0;
-      if(homeScore===awayScore) continue; // skip draws (shouldn't happen in KO)
-      const winner = homeScore>awayScore ? homeName : awayName;
+      if(homeScore===awayScore && ev.status?.type?.name!=="STATUS_FINAL_PEN") continue; // skip draws unless penalties
+      // For penalties, use ESPN's winner flag
+      let winner;
+      if(ev.status?.type?.name==="STATUS_FINAL_PEN"){
+        const winnerComp = comps.find(c=>c.winner===true);
+        if(!winnerComp) continue;
+        winner = normalizeTeam(winnerComp.team.displayName||winnerComp.team.name);
+      } else {
+        winner = homeScore>awayScore ? homeName : awayName;
+      }
       // Find matching bracket match
       const match = bracketMatchups.find(m=>
         (m.t1===homeName||m.t1===awayName) && (m.t2===homeName||m.t2===awayName)
