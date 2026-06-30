@@ -919,6 +919,7 @@ async function fetchESPNScores(){
       const match = bracketMatchups.find(m=>
         (m.t1===homeName||m.t1===awayName) && (m.t2===homeName||m.t2===awayName)
       );
+      console.log('[BR]', homeName, 'vs', awayName, '→ winner:', winner, '| match found:', match?match.id:'NONE', '| homeWinner:', home.winner, 'awayWinner:', away.winner);
       if(match) newBracketResults[match.id] = winner;
     }
 
