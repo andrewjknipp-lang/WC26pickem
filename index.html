@@ -112,7 +112,7 @@ input[type=password]{width:180px}
 .match-team.picked{background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.4)}
 .match-team.correct-pick{border:1px solid rgba(74,222,128,.6)!important}
 .match-team.correct-pick.picked{background:rgba(74,222,128,.2)!important;border:1px solid rgba(74,222,128,.8)!important}
-.match-team.incorrect-pick.picked{background:rgba(248,113,113,.1)!important;border:1px solid rgba(248,113,113,.5)!important;opacity:.5}
+.match-team.incorrect-pick.picked{background:rgba(248,113,113,.15)!important;border:1px solid rgba(248,113,113,.6)!important;opacity:.85}
 .match-team.correct-pick:not(.picked){opacity:.4}
 .match-team.incorrect-pick:not(.picked){opacity:.4}
 .match-team.tbd{opacity:.4;cursor:default}
@@ -2074,12 +2074,12 @@ function renderBracket(){
         <div class="match-team ${p===m.t1?"picked":""} ${t1tbd?"tbd":""} ${LOCKED_MATCHES[m.id]?"locked-match":""} ${(window.bracketResults&&window.bracketResults[m.id])?(window.bracketResults[m.id]===m.t1?"correct-pick":"incorrect-pick"):""}" onclick="${t1tbd||LOCKED_MATCHES[m.id]||bracketLocked()?"":"pickB('"+m.id+"','"+esc(m.t1)+"')"}">
           <span class="team-flag">${t1tbd?"❓":flag(m.t1)}</span>
           <span class="mt-name">${m.t1||"TBD"}</span>
-          ${(()=>{const r=window.bracketResults&&window.bracketResults[m.id];if(r){if(p===m.t1)return r===m.t1?'<span style="color:#4ade80">✓</span>':'<span style="color:#f87171">✗</span>';return r===m.t1?'<span style="font-size:11px;color:#4ade80;opacity:.8">W</span>':'';}return p===m.t1?'✓':''})()}
+          ${(()=>{const r=window.bracketResults&&window.bracketResults[m.id];if(r){if(p===m.t1)return r===m.t1?'<span style="color:#4ade80">✓</span>':'<span style="color:#f87171">✗</span>';return r===m.t1?'<span style="font-size:12px;font-weight:700;color:#4ade80">W</span>':'';}return p===m.t1?'✓':''})()}
         </div>
         <div class="match-team ${p===m.t2?"picked":""} ${t2tbd?"tbd":""} ${(window.bracketResults&&window.bracketResults[m.id])?(window.bracketResults[m.id]===m.t2?"correct-pick":"incorrect-pick"):""}" onclick="${t2tbd?"":"pickB('"+m.id+"','"+esc(m.t2)+"')"}">
           <span class="team-flag">${t2tbd?"❓":flag(m.t2)}</span>
           <span class="mt-name">${m.t2||"TBD"}</span>
-          ${(()=>{const r=window.bracketResults&&window.bracketResults[m.id];if(r){if(p===m.t2)return r===m.t2?'<span style="color:#4ade80">✓</span>':'<span style="color:#f87171">✗</span>';return r===m.t2?'<span style="font-size:11px;color:#4ade80;opacity:.8">W</span>':'';}return p===m.t2?'✓':''})()}
+          ${(()=>{const r=window.bracketResults&&window.bracketResults[m.id];if(r){if(p===m.t2)return r===m.t2?'<span style="color:#4ade80">✓</span>':'<span style="color:#f87171">✗</span>';return r===m.t2?'<span style="font-size:12px;font-weight:700;color:#4ade80">W</span>':'';}return p===m.t2?'✓':''})()}
         </div>
       </div>`;
     });
