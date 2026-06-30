@@ -849,7 +849,7 @@ async function fetchESPNScores(){
       sorted.forEach((t,i)=>newResult[t]=i+1);
       // Only update if different from current AND adminResults not already fully confirmed
       const allConfirmed = Object.keys(S.adminResults).length === 12;
-      if(allConfirmed) return; // Group stage final — never overwrite with ESPN provisional data
+      if(allConfirmed) continue; // Group stage final — skip this group, don't overwrite
       const cur = JSON.stringify(S.adminResults[grp]||{});
       if(cur !== JSON.stringify(newResult)){
         S.adminResults[grp] = newResult;
