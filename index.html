@@ -1245,24 +1245,21 @@ function renderBracketPicks(){
         <tr>
           <th style="text-align:left;min-width:120px">Entry</th>`;
     matches.forEach((m,i) => {
-      const matchup = R32[i*2] && R32[i*2+1]
-        ? `${R32[i*2]?.t1||'?'} vs ${R32[i*2+1]?.t2||'?'}`
-        : m.id;
-      // For R32, show actual teams. For later rounds show match number
       if(lbl==='R32'){
-        html += `<th style="text-align:center;font-size:10px;font-weight:400;max-width:70px">${m.t1}<br>vs<br>${m.t2}</th>`;
+        // Just show the two flags stacked — much tighter than text
+        html += `<th style="text-align:center;padding:2px 1px;width:28px">${flag(m.t1)}<br>${flag(m.t2)}</th>`;
       } else {
-        html += `<th style="text-align:center;font-size:10px;font-weight:400">${lbl} ${i+1}</th>`;
+        html += `<th style="text-align:center;font-size:10px;font-weight:400;padding:2px 1px;width:28px">${i+1}</th>`;
       }
     });
-    html += '<th style="text-align:center;font-size:10px;font-weight:600;color:var(--gold)">Pts</th></tr>';
+    html += '<th style="text-align:center;font-size:10px;font-weight:600;color:var(--gold);padding:2px 4px">Pts</th></tr>';
 
     entryKeys.forEach(k => {
       const bp = entries[k].bracketPicks || {};
       const br = window.bracketResults || {};
       let roundPts = 0;
       matches.forEach(m => { if(br[m.id] && bp[m.id]===br[m.id]) roundPts += pts; });
-      html += `<tr><td style="color:var(--text2);font-size:11px;white-space:nowrap">${k}</td>`;
+      html += `<tr><td style="color:var(--text2);font-size:11px;white-space:nowrap;padding-right:8px">${k}</td>`;
       matches.forEach(m => {
         const pick = bp[m.id] || '—';
         const hasPick = pick !== '—';
@@ -1273,26 +1270,15 @@ function renderBracketPicks(){
             ? '<span style="font-size:9px;color:#4ade80;vertical-align:super">✓</span>'
             : '<span style="font-size:9px;color:#f87171;vertical-align:super">✗</span>';
         }
-        html += `<td style="text-align:center;padding:3px 2px;font-size:18px">
+        html += `<td style="text-align:center;padding:2px 1px;font-size:18px">
           ${hasPick ? `<span title="${pick}">${flag(pick)}${indicator}</span>` : '<span style="color:var(--text2);font-size:11px">—</span>'}
         </td>`;
       });
-      html += `<td style="text-align:center;font-size:11px;font-weight:600;color:var(--gold);white-space:nowrap;padding-left:6px">${roundPts}pt</td>`;
+      html += `<td style="text-align:center;font-size:11px;font-weight:600;color:var(--gold);white-space:nowrap;padding-left:4px">${roundPts}pt</td>`;
       html += '</tr>';
     });
 
-    // Consensus row
-    html += `<tr style="background:rgba(240,192,64,0.08)"><td style="font-size:10px;color:var(--gold);font-weight:600">Most picked</td>`;
-    matches.forEach(m => {
-      const tally = {};
-      entryKeys.forEach(k => {
-        const p = (entries[k].bracketPicks||{})[m.id];
-        if(p) tally[p] = (tally[p]||0)+1;
-      });
-      const top = Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
-      html += `<td style="text-align:center;font-size:16px;color:var(--gold)">${top ? `<span title="${top[0]}">${flag(top[0])}</span><span style="font-size:10px;vertical-align:super">${top[1]}</span>` : '—'}</td>`;
-    });
-    html += '</tr></table></div></div>';
+    html += '</table></div></div>';
   });
 
   // ── SECTION 3: Consensus heatmap ──────────────────────────
