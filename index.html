@@ -869,8 +869,7 @@ async function fetchESPNScores(){
     }
 
     // ── BRACKET RESULTS from ESPN knockout matches ────────────────
-    // Build map of r32 match teams so we can identify winners
-    // We use the same adv/getSlot logic but inline here for scoring
+    console.log('[BR] events count:', events.length);
     const bracketMatchups = [
       {id:"r32_3",  t1:FINAL_GROUP_RESULTS.E?Object.keys(FINAL_GROUP_RESULTS.E).find(k=>FINAL_GROUP_RESULTS.E[k]===1):"Germany",         t2:"Paraguay"},
       {id:"r32_6",  t1:FINAL_GROUP_RESULTS.I?Object.keys(FINAL_GROUP_RESULTS.I).find(k=>FINAL_GROUP_RESULTS.I[k]===1):"France",           t2:"Sweden"},
