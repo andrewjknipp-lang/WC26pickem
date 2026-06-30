@@ -1256,8 +1256,8 @@ function renderBracketPicks(){
       matches.forEach(m => {
         const pick = bp[m.id] || '—';
         const hasPick = pick !== '—';
-        html += `<td style="text-align:center;font-size:11px;padding:3px 2px;white-space:nowrap">
-          ${hasPick ? `<span title="${pick}" style="display:inline-flex;align-items:center;gap:3px"><span style="width:18px;text-align:center;display:inline-block">${flag(pick)}</span><span>${pick.length>8?pick.slice(0,8)+'…':pick}</span></span>` : '<span style="color:var(--text2)">—</span>'}
+        html += `<td style="text-align:center;font-size:11px;padding:3px 2px;white-space:nowrap;text-align:center;font-size:18px">
+          ${hasPick ? `<span title="${pick}">${flag(pick)}</span>` : '<span style="color:var(--text2);font-size:11px">—</span>'}
         </td>`;
       });
       html += '</tr>';
@@ -1272,7 +1272,7 @@ function renderBracketPicks(){
         if(p) tally[p] = (tally[p]||0)+1;
       });
       const top = Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
-      html += `<td style="text-align:center;font-size:10px;color:var(--gold)">${top ? `${flag(top[0])} ${top[0].length>6?top[0].slice(0,6)+'…':top[0]} (${top[1]})` : '—'}</td>`;
+      html += `<td style="text-align:center;font-size:16px;color:var(--gold)">${top ? `<span title="${top[0]}">${flag(top[0])}</span><span style="font-size:10px;vertical-align:super">${top[1]}</span>` : '—'}</td>`;
     });
     html += '</tr></table></div></div>';
   });
@@ -1317,20 +1317,16 @@ function renderBracketPicks(){
         <span>${k} <span style="color:var(--text2);font-weight:400">(${entries[k].name}) — ${pickCount}/31 picks</span></span>
         <span style="color:var(--text2);font-size:11px">▼</span>
       </div>
-      <div style="display:none;padding:10px 14px;flex-wrap:wrap;gap:12px">`;
+      <div style="display:none;padding:10px 14px;flex-wrap:wrap;gap:16px">`;
     allRounds.forEach(({lbl, matches}) => {
-      html += `<div style="min-width:110px"><div style="font-size:10px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">${lbl}</div>`;
+      html += `<div><div style="font-size:10px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">${lbl}</div>`;
       matches.forEach(m => {
         const pick = bp[m.id];
-        html += `<div style="font-size:11px;color:${pick?'var(--text)':'var(--text2)'};padding:2px 0;display:flex;align-items:center;gap:4px;white-space:nowrap">
-          <span style="width:20px;display:inline-block;text-align:center">${pick ? flag(pick) : ''}</span>
-          <span>${pick || '—'}</span>
-        </div>`;
+        html += `<div style="font-size:20px;line-height:1.4">${pick ? flag(pick) : '<span style="font-size:10px;color:var(--text2)">—</span>'}</div>`;
       });
       html += '</div>';
     });
-    html += '</div></div>';
-  });
+    html += '</div></div>';});
 
   el.innerHTML = html;
 }
@@ -2402,7 +2398,7 @@ function showMsg(id,txt,type){
     document.getElementById("cd-s").textContent = String(s).padStart(2,"0");
   }
   tick(); setInterval(tick, 1000);
-setInterval(()=>{ if(document.getElementById("picks")?.classList.contains("active")) renderPicks(); }, 1000);
+setInterval(()=>{ if(document.getElementById("picks")?.classList.contains("active") && currentPicksView!=='bracket') renderPicks(); }, 1000);
 })();
 
 // ── BOOT ──────────────────────────────────────────
