@@ -905,16 +905,16 @@ async function fetchESPNScores(){
       const awayName = normalizeTeam(away.team.displayName||away.team.name);
       const homeScore = parseInt(home.score)||0;
       const awayScore = parseInt(away.score)||0;
-      if(homeScore===awayScore && ev.status?.type?.name!=="STATUS_FINAL_PEN") continue; // skip draws unless penalties
-      // For penalties, use ESPN's winner flag
+      if(homeScore===awayScore && ev.status?.type?.name!=="STATUS_FINAL_PEN" && ev.status?.type?.name!=="STATUS_FINAL_AET") continue;
+      // Determine winner — for PEN/AET use ESPN winner flag (bool or string), fallback to score
       let winner;
-      if(ev.status?.type?.name==="STATUS_FINAL_PEN"){
-        const winnerComp = comps.find(c=>c.winner===true);
-        if(!winnerComp) continue;
-        winner = normalizeTeam(winnerComp.team.displayName||winnerComp.team.name);
-      } else {
-        winner = homeScore>awayScore ? homeName : awayName;
-      }
+      const homeWinner = home.winner===true || home.winner==="true";
+      const awayWinner = away.winner===true || away.winner==="true";
+      if(homeWinner) winner = homeName;
+      else if(awayWinner) winner = awayName;
+      else if(homeScore > awayScore) winner = homeName;
+      else if(awayScore > homeScore) winner = awayName;
+      else continue; // genuine draw, skip
       // Find matching bracket match
       const match = bracketMatchups.find(m=>
         (m.t1===homeName||m.t1===awayName) && (m.t2===homeName||m.t2===awayName)
