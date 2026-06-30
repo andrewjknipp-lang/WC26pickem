@@ -1246,10 +1246,9 @@ function renderBracketPicks(){
           <th style="text-align:left;min-width:120px">Entry</th>`;
     matches.forEach((m,i) => {
       if(lbl==='R32'){
-        // Just show the two flags stacked — much tighter than text
-        html += `<th style="text-align:center;padding:2px 1px;width:28px">${flag(m.t1)}<br>${flag(m.t2)}</th>`;
+        html += `<th style="text-align:center;padding:2px 3px;font-size:9px;font-weight:400;color:var(--text2);white-space:nowrap">${fifaCode(m.t1)}<br><span style="color:var(--text3)">vs</span><br>${fifaCode(m.t2)}</th>`;
       } else {
-        html += `<th style="text-align:center;font-size:10px;font-weight:400;padding:2px 1px;width:28px">${i+1}</th>`;
+        html += `<th style="text-align:center;font-size:10px;font-weight:400;padding:2px 3px">${i+1}</th>`;
       }
     });
     html += '<th style="text-align:center;font-size:10px;font-weight:600;color:var(--gold);padding:2px 4px">Pts</th></tr>';
@@ -1267,11 +1266,11 @@ function renderBracketPicks(){
         let indicator = '';
         if(hasPick && result){
           indicator = pick===result
-            ? '<span style="font-size:9px;color:#4ade80;vertical-align:super">✓</span>'
-            : '<span style="font-size:9px;color:#f87171;vertical-align:super">✗</span>';
+            ? '<span style="position:absolute;top:-2px;right:-2px;font-size:8px;color:#4ade80;line-height:1">✓</span>'
+            : '<span style="position:absolute;top:-2px;right:-2px;font-size:8px;color:#f87171;line-height:1">✗</span>';
         }
-        html += `<td style="text-align:center;padding:2px 1px;font-size:18px">
-          ${hasPick ? `<span title="${pick}">${flag(pick)}${indicator}</span>` : '<span style="color:var(--text2);font-size:11px">—</span>'}
+        html += `<td style="text-align:center;padding:2px 1px">
+          ${hasPick ? `<span title="${pick}" style="position:relative;display:inline-block;font-size:18px;line-height:1">${flag(pick)}${indicator}</span>` : '<span style="color:var(--text2);font-size:11px">—</span>'}
         </td>`;
       });
       html += `<td style="text-align:center;font-size:11px;font-weight:600;color:var(--gold);white-space:nowrap;padding-left:4px">${roundPts}pt</td>`;
@@ -1645,6 +1644,22 @@ function flag(team){
   return `<img src="https://flagcdn.com/24x18/${code}.png" width="24" height="18" alt="${team}" style="border-radius:2px;vertical-align:middle;object-fit:cover">`;
 }
 const FLAGS = FLAG_CODES;
+
+const FIFA_CODES = {
+  "Mexico":"MEX","South Africa":"RSA","South Korea":"KOR","Czechia":"CZE",
+  "Canada":"CAN","Bosnia-Herzegovina":"BIH","Qatar":"QAT","Switzerland":"SUI",
+  "Brazil":"BRA","Morocco":"MAR","Haiti":"HAI","Scotland":"SCO",
+  "United States":"USA","Paraguay":"PAR","Australia":"AUS","Türkiye":"TUR",
+  "Germany":"GER","Curaçao":"CUW","Ivory Coast":"CIV","Ecuador":"ECU",
+  "Netherlands":"NED","Japan":"JPN","Sweden":"SWE","Tunisia":"TUN",
+  "Belgium":"BEL","Egypt":"EGY","Iran":"IRN","New Zealand":"NZL",
+  "Spain":"ESP","Cape Verde":"CPV","Uruguay":"URU","Saudi Arabia":"KSA",
+  "France":"FRA","Senegal":"SEN","Iraq":"IRQ","Norway":"NOR",
+  "Argentina":"ARG","Algeria":"ALG","Austria":"AUT","Jordan":"JOR",
+  "Portugal":"POR","DR Congo":"COD","Uzbekistan":"UZB","Colombia":"COL",
+  "England":"ENG","Croatia":"CRO","Ghana":"GHA","Panama":"PAN",
+};
+function fifaCode(team){ return FIFA_CODES[team]||team.slice(0,3).toUpperCase(); }
 
 // ── STATE ──────────────────────────────────────────
 let S = { entries:{}, adminResults:{}, adminGoals:null, currentEntry:null, adminUnlocked:false };
