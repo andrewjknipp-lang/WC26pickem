@@ -1219,9 +1219,16 @@ function renderBracketPicks(){
   html += '<div class="summary-card"><div class="summary-card-title">Each entry\'s champion pick</div>';
   entryKeys.forEach(k => {
     const champ = (entries[k].bracketPicks||{})['final'] || '—';
+    const champResult = (window.bracketResults||{})['final'];
+    let champIndicator = '';
+    if(champ !== '—' && champResult){
+      champIndicator = champ===champResult
+        ? ' <span style="font-size:10px;color:#4ade80">✓</span>'
+        : ' <span style="font-size:10px;color:#f87171">✗</span>';
+    }
     html += `<div class="bar-row">
       <div class="bar-label" style="min-width:140px">${k}</div>
-      <div style="font-size:12px;color:var(--text)">${champ !== '—' ? flag(champ)+' '+champ : '<span style="color:var(--text2)">not picked</span>'}</div>
+      <div style="font-size:12px;color:var(--text)">${champ !== '—' ? flag(champ)+' '+champ+champIndicator : '<span style="color:var(--text2)">not picked</span>'}</div>
     </div>`;
   });
   html += '</div></div>';
@@ -1248,18 +1255,29 @@ function renderBracketPicks(){
         html += `<th style="text-align:center;font-size:10px;font-weight:400">${lbl} ${i+1}</th>`;
       }
     });
-    html += '</tr>';
+    html += '<th style="text-align:center;font-size:10px;font-weight:600;color:var(--gold)">Pts</th></tr>';
 
     entryKeys.forEach(k => {
       const bp = entries[k].bracketPicks || {};
+      const br = window.bracketResults || {};
+      let roundPts = 0;
+      matches.forEach(m => { if(br[m.id] && bp[m.id]===br[m.id]) roundPts += pts; });
       html += `<tr><td style="color:var(--text2);font-size:11px;white-space:nowrap">${k}</td>`;
       matches.forEach(m => {
         const pick = bp[m.id] || '—';
         const hasPick = pick !== '—';
-        html += `<td style="text-align:center;font-size:11px;padding:3px 2px;white-space:nowrap;text-align:center;font-size:18px">
-          ${hasPick ? `<span title="${pick}">${flag(pick)}</span>` : '<span style="color:var(--text2);font-size:11px">—</span>'}
+        const result = br[m.id];
+        let indicator = '';
+        if(hasPick && result){
+          indicator = pick===result
+            ? '<span style="font-size:9px;color:#4ade80;vertical-align:super">✓</span>'
+            : '<span style="font-size:9px;color:#f87171;vertical-align:super">✗</span>';
+        }
+        html += `<td style="text-align:center;padding:3px 2px;font-size:18px">
+          ${hasPick ? `<span title="${pick}">${flag(pick)}${indicator}</span>` : '<span style="color:var(--text2);font-size:11px">—</span>'}
         </td>`;
       });
+      html += `<td style="text-align:center;font-size:11px;font-weight:600;color:var(--gold);white-space:nowrap;padding-left:6px">${roundPts}pt</td>`;
       html += '</tr>';
     });
 
@@ -1312,10 +1330,34 @@ function renderBracketPicks(){
   entryKeys.forEach((k,ki) => {
     const bp = entries[k].bracketPicks || {};
     const br = window.bracketResults || {};
+    const er = S.entries[k];
+    // Calculate group points
+    const effectiveResults = S.adminResults || {};
+    let gp = 0;
+    Object.entries(GROUPS).forEach(([grp]) => {
+      const res = effectiveResults[grp], pred = er.groupPicks&&er.groupPicks[grp];
+      if(!res||!pred) return;
+      pred.forEach((team,i) => { if(res[team]===i+1) gp++; });
+    });
+    // Calculate bracket points
+    const new_r32 = ['r32_3','r32_6','r32_1','r32_4','r32_12','r32_11','r32_9','r32_10','r32_2','r32_5','r32_7','r32_8','r32_14','r32_15','r32_13','r32_16'];
+    const new_r16 = new_r32.map((id,i)=>i%2===0?`${id}_nx${i/2}`:null).filter(Boolean);
+    const new_qf  = new_r16.map((id,i)=>i%2===0?`${id}_nx${i/2}`:null).filter(Boolean);
+    const new_sf  = new_qf.map((id,i)=>i%2===0?`${id}_nx${i/2}`:null).filter(Boolean);
+    let bpPts = 0;
+    new_r32.forEach(id=>{if(br[id]&&bp[id]===br[id])bpPts+=1;});
+    new_r16.forEach(id=>{if(br[id]&&bp[id]===br[id])bpPts+=2;});
+    new_qf.forEach(id=>{if(br[id]&&bp[id]===br[id])bpPts+=4;});
+    new_sf.forEach(id=>{if(br[id]&&bp[id]===br[id])bpPts+=8;});
+    if(br['final']&&bp['final']===br['final'])bpPts+=16;
+    const total = gp + bpPts;
     html += `<div style="margin-bottom:8px;background:var(--surface);border:0.5px solid var(--border2);border-radius:8px;overflow:hidden">
       <div onclick="var c=this.nextElementSibling;c.style.display=c.style.display==='none'?'flex':'none'" style="cursor:pointer;padding:10px 14px;font-weight:600;font-size:13px;color:var(--text);display:flex;justify-content:space-between;align-items:center">
         <span>${k} <span style="color:var(--text2);font-weight:400">(${entries[k].name})</span></span>
-        <span style="color:var(--text2);font-size:11px">▼</span>
+        <span style="display:flex;gap:12px;align-items:center">
+          <span style="font-size:11px;color:var(--text2)">Groups: <b style="color:var(--text)">${gp}</b> &nbsp;Bracket: <b style="color:var(--text)">${bpPts}</b> &nbsp;Total: <b style="color:var(--gold)">${total}</b></span>
+          <span style="color:var(--text2);font-size:11px">▼</span>
+        </span>
       </div>
       <div style="display:none;padding:10px 14px;flex-wrap:wrap;gap:16px">`;
     allRounds.forEach(({lbl, matches}) => {
