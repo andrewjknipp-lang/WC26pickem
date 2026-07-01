@@ -2249,9 +2249,8 @@ function renderLeaderboard(){
 
   html+=`<table class="lb"><thead><tr>
     <th>#</th><th>Entry</th><th>Entrant</th>
-    <th>Picks</th>
-    <th class="right">Group pts</th><th class="right">Bracket pts</th>
     <th class="pts">Total</th>
+    <th class="right" style="color:var(--text2);font-size:10px">Grp</th><th class="right" style="color:var(--text2);font-size:10px">Bracket</th>
     ${showGoals?`<th class="right">Goals</th>`:""}
     ${showGoals&&actual!=null?`<th class="right">Diff</th>`:""}
   </tr></thead><tbody>`;
@@ -2271,9 +2270,8 @@ function renderLeaderboard(){
       <td class="rank">${i+1}</td>
       <td style="font-weight:600" class="${mc}">${s.entry}</td>
       <td style="color:var(--text2)">${s.name}</td>
-      <td><div class="completion-cell">${gBadge}${bBadge}</div></td>
-      <td class="right">${s.gp}</td><td class="right">${s.bp}</td>
-      <td class="pts">${s.total}</td>
+      <td class="pts" style="font-size:18px;font-weight:700">${s.total}</td>
+      <td class="right" style="color:var(--text2);font-size:12px">${s.gp}</td><td class="right" style="color:var(--text2);font-size:12px">${s.bp}</td>
       ${showGoals?`<td class="right" style="color:var(--text2)">${s.guess||"—"}</td>`:""}
       ${showGoals&&actual!=null?`<td class="right" style="color:${s.diff===0?"#3fb950":"var(--text2)"}">${s.diff}</td>`:""}
     </tr>`;
