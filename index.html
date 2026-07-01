@@ -361,9 +361,9 @@ input.pin-input{width:110px;letter-spacing:.25em;font-size:16px;text-align:cente
 .group-card-picks{background:var(--surface);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:1rem;overflow:hidden}
 .group-card-picks-header{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);letter-spacing:.08em;margin-bottom:.75rem}
 .picks-table{width:100%;border-collapse:collapse;font-size:12px}
-.picks-table th{color:var(--text3);font-weight:600;text-align:left;padding:3px 6px;border-bottom:1px solid var(--border);white-space:nowrap}
+.picks-table th{color:var(--text3);font-weight:600;text-align:left;padding:3px 2px;border-bottom:1px solid var(--border);white-space:nowrap}
 .picks-table th.center{text-align:center}
-.picks-table td{padding:3px 6px;border-bottom:0.5px solid rgba(255,255,255,.04);vertical-align:middle}
+.picks-table td{padding:3px 2px;border-bottom:0.5px solid rgba(255,255,255,.04);vertical-align:middle}
 .picks-table tr:last-child td{border-bottom:none}
 .pick-team{display:flex;align-items:center;gap:4px}
 .pick-pos{display:inline-block;width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:700;text-align:center;line-height:18px;flex-shrink:0}
@@ -1241,9 +1241,9 @@ function renderBracketPicks(){
     html += `<div style="margin-bottom:1.5rem">
       <div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:.5rem">${lbl} <span style="color:var(--text2);font-weight:400;font-size:11px">${pts} pt${pts>1?'s':''} each</span></div>
       <div style="overflow-x:auto">
-      <table class="picks-table" style="min-width:600px">
+      <table class="picks-table" style="min-width:0;width:100%">
         <tr>
-          <th style="text-align:left;min-width:120px">Entry</th>`;
+          <th style="text-align:left;white-space:nowrap;padding-right:8px">Entry</th>`;
     matches.forEach((m,i) => {
       if(lbl==='R32'){
         html += `<th style="text-align:center;padding:2px 3px;font-size:9px;font-weight:400;color:var(--text2);white-space:nowrap">${fifaCode(m.t1)}<br><span style="color:var(--text3)">vs</span><br>${fifaCode(m.t2)}</th>`;
