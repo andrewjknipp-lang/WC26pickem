@@ -889,7 +889,8 @@ async function fetchESPNScores(){
         }
       }
     }
-    // Store bracket results globally if any foundject.keys(newBracketResults).length > 0){
+    // Store bracket results globally if any found
+    if(Object.keys(newBracketResults).length > 0){
       window.bracketResults = Object.assign(window.bracketResults||{}, newBracketResults);
     }
 
