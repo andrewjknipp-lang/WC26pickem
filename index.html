@@ -892,6 +892,34 @@ async function fetchESPNScores(){
 
     // Match ESPN completed knockout results to bracket match IDs
     const newBracketResults = {};
+
+    // Build full matchup list dynamically using current bracketResults
+    const allMatchups = [...bracketMatchups]; // start with R32
+    // Generate R16/QF/SF/Final IDs and their expected teams from known R32 results
+    const br_now = Object.assign({}, window.bracketResults, newBracketResults);
+    const new_r32_ids = ['r32_3','r32_6','r32_1','r32_4','r32_12','r32_11','r32_9','r32_10',
+                         'r32_2','r32_5','r32_7','r32_8','r32_14','r32_15','r32_13','r32_16'];
+    const new_r16_ids = new_r32_ids.filter((_,i)=>i%2===0).map((id,i)=>({
+      id:`${id}_nx${i}`,
+      t1:br_now[new_r32_ids[i*2]]||null,
+      t2:br_now[new_r32_ids[i*2+1]]||null
+    })).filter(m=>m.t1&&m.t2);
+    const new_qf_ids = new_r16_ids.filter((_,i)=>i%2===0).map((m,i)=>({
+      id:`${m.id}_nx${i}`,
+      t1:br_now[m.id]||null,
+      t2:br_now[new_r16_ids[i*2+1]?.id]||null
+    })).filter(m=>m.t1&&m.t2);
+    const new_sf_ids = new_qf_ids.filter((_,i)=>i%2===0).map((m,i)=>({
+      id:`${m.id}_nx${i}`,
+      t1:br_now[m.id]||null,
+      t2:br_now[new_qf_ids[i*2+1]?.id]||null
+    })).filter(m=>m.t1&&m.t2);
+    const sf0 = new_sf_ids[0], sf1 = new_sf_ids[1];
+    if(sf0&&sf1&&br_now[sf0.id]&&br_now[sf1.id]){
+      allMatchups.push({id:'final', t1:br_now[sf0.id], t2:br_now[sf1.id]});
+    }
+    allMatchups.push(...new_r16_ids, ...new_qf_ids, ...new_sf_ids);
+
     for(const ev of events){
       const comp = ev.competitions&&ev.competitions[0];
       if(!comp) continue;
@@ -919,8 +947,8 @@ async function fetchESPNScores(){
       else if(homeScore > awayScore) winner = homeName;
       else if(awayScore > homeScore) winner = awayName;
       else continue; // genuine draw, skip
-      // Find matching bracket match
-      const match = bracketMatchups.find(m=>
+      // Find matching bracket match across all rounds
+      const match = allMatchups.find(m=>m.t1&&m.t2&&
         (m.t1===homeName||m.t1===awayName) && (m.t2===homeName||m.t2===awayName)
       );
       if(match) newBracketResults[match.id] = winner;
