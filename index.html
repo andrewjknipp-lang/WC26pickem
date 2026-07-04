@@ -900,6 +900,8 @@ async function fetchESPNScores(){
     if(lbTab && lbTab.classList.contains("active")) renderLeaderboard();
     const brTab = document.getElementById("bracket");
     if(brTab && brTab.classList.contains("active")) renderBracket();
+    const pkTab = document.getElementById("picks");
+    if(pkTab && pkTab.classList.contains("active") && currentPicksView==='bracket') renderBracketPicks();
   } catch(e){ console.warn("ESPN fetch failed:", e); }
 }
 
@@ -1216,7 +1218,8 @@ function renderBracketPicks(){
       if(lbl==='R32'){
         html += `<th style="text-align:center;padding:2px 3px;font-size:9px;font-weight:400;color:var(--text2);white-space:nowrap">${fifaCode(m.t1)}<br><span style="color:var(--text3)">vs</span><br>${fifaCode(m.t2)}</th>`;
       } else {
-        html += `<th style="text-align:center;font-size:10px;font-weight:400;padding:2px 3px">${i+1}</th>`;
+        const known = m.t1&&m.t1!=='TBD'&&m.t2&&m.t2!=='TBD';
+        html += `<th style="text-align:center;font-size:8px;font-weight:400;padding:2px 1px;color:var(--text2);white-space:nowrap">${known?`${fifaCode(m.t1)}<br><span style="color:var(--text3)">vs</span><br>${fifaCode(m.t2)}`:(i+1)}</th>`;
       }
     });
     html += '<th style="text-align:center;font-size:10px;font-weight:600;color:var(--gold);padding:2px 4px">Pts</th></tr>';
